@@ -75,7 +75,14 @@ export function registerApi(app: Hono<{ Bindings: Env }>): void {
   app.get("/api/links/:slug/qr", async (c) => {
     const link = await getLink(c.env.DB, c.req.param("slug"));
     if (!link) return c.json({ error: "Not found" }, 404);
-    const svg = qrSvg(shortUrl(c.env, link.slug));
+    // ?frame=1 draws a "scan me" card; ?caption=... overrides the default label
+    // (capped, and XML-escaped by qrSvg). No frame param → a plain code.
+    const caption = c.req.query("caption")?.slice(0, 24);
+    const framed = c.req.query("frame") === "1" || caption !== undefined;
+    const svg = qrSvg(
+      shortUrl(c.env, link.slug),
+      framed ? { frame: true, caption: caption ?? "SCAN ME" } : {},
+    );
     return c.body(svg, 200, {
       "content-type": "image/svg+xml; charset=utf-8",
       "cache-control": "private, max-age=3600",

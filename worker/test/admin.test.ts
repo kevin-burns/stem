@@ -60,7 +60,7 @@ describe("GET /admin", () => {
     const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
     const body = await res.text();
     expect(body).toContain("class='qr");
-    expect(body).toContain('"/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr"');
+    expect(body).toContain('"/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr?frame=1"');
     expect(body).toContain('id="qrModal"');
   });
 

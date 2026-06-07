@@ -37,4 +37,33 @@ describe("qrSvg", () => {
   it("throws on empty input", () => {
     expect(() => qrSvg("")).toThrow(/required/);
   });
+
+  describe("framed / captioned", () => {
+    it("renders a caption as <text> and grows taller than wide", () => {
+      const svg = qrSvg("https://l.example.com/x", { caption: "SCAN ME" });
+      expect(svg).toContain("<text");
+      expect(svg).toContain("SCAN ME");
+      const [, w, h] = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/)!;
+      expect(Number(h)).toBeGreaterThan(Number(w));
+    });
+
+    it("draws a frame (stroke) when frame:true, with no caption text", () => {
+      const svg = qrSvg("https://l.example.com/x", { frame: true });
+      expect(svg).toContain("stroke=");
+      expect(svg).not.toContain("<text");
+    });
+
+    it("XML-escapes the caption (no markup injection)", () => {
+      const svg = qrSvg("https://l.example.com/x", { caption: '<b>&"' });
+      expect(svg).not.toContain("<b>");
+      expect(svg).toContain("&lt;b&gt;");
+      expect(svg).toContain("&amp;");
+    });
+
+    it("a plain (unframed) code has neither a frame stroke nor a caption", () => {
+      const svg = qrSvg("https://l.example.com/x");
+      expect(svg).not.toContain("<text");
+      expect(svg).not.toContain("stroke=");
+    });
+  });
 });

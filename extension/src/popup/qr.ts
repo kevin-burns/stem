@@ -3,21 +3,25 @@ import { qrSvg } from "@url-shortener/shared";
 // Rasterise the QR SVG to a PNG blob. The SVG is loaded through a data: URL
 // (canvas-clean — a blob/element source can taint the canvas in Chromium and
 // break toBlob). Uses canvas, so it runs in the popup but not in jsdom.
-async function qrPngBlob(svg: string, size: number): Promise<Blob> {
+async function qrPngBlob(svg: string, width: number): Promise<Blob> {
   const img = new Image();
   await new Promise<void>((resolve, reject) => {
     img.onload = () => resolve();
     img.onerror = () => reject(new Error("could not render the QR image"));
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   });
+  // Preserve the SVG's aspect ratio — the framed card is taller than wide.
+  const ratio = (img.naturalHeight || img.height) / (img.naturalWidth || img.width) || 1;
+  const w = width;
+  const h = Math.round(width * ratio);
   const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = w;
+  canvas.height = h;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("canvas unavailable");
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, size, size);
-  ctx.drawImage(img, 0, 0, size, size);
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h);
   const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!png) throw new Error("could not encode the PNG");
   return png;
@@ -43,7 +47,7 @@ export function openQrOverlay(shortUrl: string, doc: Document = document): HTMLE
   const card = doc.createElement("div");
   card.className = "qr-card";
 
-  const svg = qrSvg(shortUrl);
+  const svg = qrSvg(shortUrl, { frame: true, caption: "SCAN ME" });
   const code = doc.createElement("div");
   code.className = "qr-code";
   // qrSvg output is trusted markup we generate ourselves — it encodes the URL as

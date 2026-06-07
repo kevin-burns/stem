@@ -23,9 +23,13 @@ const PAGE = `<!doctype html>
       <tbody id="rows"></tbody>
     </table>
     <dialog id="qrModal">
-      <article>
-        <img id="qrImg" alt="QR code" style="display:block;margin:0 auto;width:240px;height:240px" />
-        <footer><span id="qrMsg" style="margin-right:auto;font-size:.85em;color:var(--pico-muted-color)"></span><button id="qrCopy" class="secondary">Copy image</button> <button id="qrClose">Close</button></footer>
+      <article style="text-align:center">
+        <img id="qrImg" alt="QR code" style="display:block;margin:0 auto;width:240px;max-width:100%;height:auto" />
+        <p id="qrMsg" style="min-height:1.2em;margin:.6rem 0;font-size:.85em;color:var(--pico-muted-color)"></p>
+        <footer style="display:flex;gap:.5rem;justify-content:center">
+          <button id="qrCopy" class="secondary" style="width:auto;margin:0;padding:.4rem .9rem">Copy image</button>
+          <button id="qrClose" style="width:auto;margin:0;padding:.4rem .9rem">Close</button>
+        </footer>
       </article>
     </dialog>
   </main>
@@ -39,7 +43,7 @@ const PAGE = `<!doctype html>
     // Rasterise the QR to a PNG and put it on the clipboard. Drawing the live SVG
     // <img> straight to a canvas can taint it in Chromium, so we fetch the SVG
     // markup and load it through a canvas-clean data: URL instead.
-    async function qrPngBlob(size) {
+    async function qrPngBlob(width) {
       var svgText = await (await fetch(qrImg.src)).text();
       var img = new Image();
       await new Promise(function (res, rej) {
@@ -47,11 +51,14 @@ const PAGE = `<!doctype html>
         img.onerror = function () { rej(new Error("could not render the QR image")); };
         img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
       });
+      // Preserve the SVG's aspect ratio — the framed card is taller than wide.
+      var ratio = (img.naturalHeight || img.height) / (img.naturalWidth || img.width) || 1;
+      var w = width, h = Math.round(width * ratio);
       var canvas = document.createElement("canvas");
-      canvas.width = size; canvas.height = size;
+      canvas.width = w; canvas.height = h;
       var ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0, size, size);
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
       return await new Promise(function (res, rej) {
         canvas.toBlob(function (b) { b ? res(b) : rej(new Error("could not encode the PNG")); }, "image/png");
       });
@@ -106,7 +113,7 @@ const PAGE = `<!doctype html>
       });
       document.querySelectorAll(".qr").forEach(function (b) {
         b.onclick = function () {
-          qrImg.src = "/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr";
+          qrImg.src = "/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr?frame=1";
           qrModal.showModal();
         };
       });

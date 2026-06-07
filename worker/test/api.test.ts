@@ -131,4 +131,13 @@ describe("GET /api/links/:slug/qr", () => {
     const res = await app().request("/api/links/nope/qr", { headers: AUTH }, env);
     expect(res.status).toBe(404);
   });
+
+  it("renders a framed 'scan me' card with ?frame=1", async () => {
+    await post({ url: "https://example.com", slug: "qframe" });
+    const res = await app().request("/api/links/qframe/qr?frame=1", { headers: AUTH }, env);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("<text");
+    expect(body).toContain("SCAN ME");
+  });
 });
