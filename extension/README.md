@@ -1,0 +1,65 @@
+# Link Shortener — Browser Extension
+
+A Chrome + Firefox (Manifest V3) extension that shortens the current tab against your
+own deployed worker, authenticating through Cloudflare Access with a **service token**
+(since `/api` is behind Access, a plain bearer token can't pass the edge). Part of the
+[url-shortener](../README.md) monorepo; reuses validation from `../shared`.
+
+**Features:** shorten the active tab (copies to clipboard) · optional custom slug,
+expiry (1h/24h/7d) and one-time links · recent-links list with search and per-row
+copy · tracking/affiliate params stripped automatically · Options page with a
+**Test connection** check and least-privilege host permission.
+
+## 1. Create the Access service token
+1. Zero Trust → **Access → Service Auth → Create Service Token**. Name it (e.g.
+   `url-shorten-extension`) and **copy the Client ID and Client Secret** — the
+   secret is shown only once. The Client ID ends in `.access`.
+2. Open the Access **application** that protects your short domain (the one covering
+   `/admin*` and `/api/*`) → **Policies → Add a policy**:
+   - **Action must be `Service Auth`**, *not* `Allow`. An `Allow` policy with a
+     service token still expects an interactive login and will be rejected with
+     `service_token_status:false`. (Cloudflare's UI warns about this.)
+   - **Include → Service Token →** your token.
+
+## 2. Build and load
+```bash
+npm run build:ext
+```
+- **Chrome/Brave/Edge:** `chrome://extensions` → enable **Developer mode** → **Load
+  unpacked** → select `extension/dist/chrome`. After a rebuild, click the card's ↻.
+- **Firefox:** use **`about:debugging#/runtime/this-firefox` → Load Temporary Add-on**
+  → pick `extension/dist/firefox/manifest.json` (or run `npm run pack:ext` and pick
+  `dist/firefox.zip`). To reload after a rebuild, click **Reload** on the add-on.
+  - Use `about:debugging`, **not** about:addons → "Install Add-on From File" — the
+    latter only accepts **Mozilla-signed** packages and will fail with "could not be
+    installed because it has not been verified."
+  - Temporary add-ons are removed on restart. For a persistent unsigned install use
+    Firefox Developer Edition/Nightly/ESR with `xpinstall.signatures.required=false`;
+    for distribution, sign via addons.mozilla.org.
+  - Requires **Firefox 127+** (for `optional_host_permissions`). After Save, approve
+    the permission doorhanger; if the popup can't reach the server, enable host access
+    under `about:addons` → the extension → Permissions.
+
+## 3. Configure
+Open the extension → **⚙** (or right-click the icon → Options) and enter, each value
+pasted verbatim (no header names, no trimming):
+- **Server URL:** your short domain, e.g. `https://l.example.com` (the redirect
+  host, not the apex).
+- **Access Client ID:** the full value including the `.access` suffix.
+- **Access Client Secret:** the full secret.
+
+Click **Save**, then **approve the host-permission prompt**. If it didn't prompt,
+enable it manually: `chrome://extensions` → the extension → **Details → Site access**
+→ turn on the toggle next to your domain. Use **Test connection** to confirm — a
+green ✓ means the token, policy, and permission are all good.
+
+## Troubleshooting
+- **"Failed to fetch"** → the host permission isn't granted for your domain (enable
+  the Site access toggle), or the Server URL points at the wrong host.
+- **"Access rejected — login redirect"** → the Access policy isn't `Service Auth`,
+  or the token isn't on the app covering `/api/*`. Verify with:
+  ```bash
+  curl -sS -o /dev/null -w "%{http_code}\n" \
+    -H "CF-Access-Client-Id: <id>.access" -H "CF-Access-Client-Secret: <secret>" \
+    https://your-short-domain/api/links   # want 200
+  ```
