@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Link Shortener",
+  "version": "0.1.0",
+  "description": "Shorten the current tab against your own Cloudflare Workers URL shortener.",
+  "action": { "default_popup": "popup/popup.html", "default_title": "Shorten this page" },
+  "options_ui": { "page": "options/options.html", "open_in_tab": true },
+  "permissions": ["storage", "activeTab", "clipboardWrite"],
+  "optional_host_permissions": ["https://*/*"],
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+}
