@@ -1,5 +1,8 @@
 # Copy to .dev.vars (git-ignored) and fill in for local dev.
 API_TOKEN="dev-local-token-change-me"
+# Your short-link hostname. Kept out of the repo; set as a secret in production
+# (`wrangler secret put SHORT_DOMAIN`). Example value:
+SHORT_DOMAIN="l.example.com"
 # Optional reputation provider credentials:
 SAFE_BROWSING_API_KEY=""
 CF_INTEL_TOKEN=""

@@ -3,10 +3,12 @@ main = "src/index.ts"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Non-secret config only. Secrets go through `wrangler secret put`.
+# Non-secret config only. Secrets (incl. SHORT_DOMAIN) go through `wrangler secret put`
+# so the real hostname is never committed to the repo.
 [vars]
 REPUTATION_PROVIDER = "google-safe-browsing"
-SHORT_DOMAIN = "l.example.com"
+# SHORT_DOMAIN is provided as a secret: `wrangler secret put SHORT_DOMAIN`
+# (and in .dev.vars for local dev). Do NOT add it here.
 
 [[d1_databases]]
 binding = "DB"
