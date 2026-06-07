@@ -68,6 +68,8 @@ async function onShorten(): Promise<void> {
 }
 
 async function init(): Promise<void> {
+  // Always available, even when misconfigured, so you can never get stuck.
+  $("openSettings").addEventListener("click", (e) => { e.preventDefault(); browser.runtime.openOptionsPage(); });
   settings = await getSettings();
   if (!isConfigured(settings)) {
     $("setup").classList.remove("hidden");

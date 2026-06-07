@@ -7,7 +7,10 @@
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-  <div class="mb-5 text-center"><h1 class="text-xl font-bold text-indigo-600">Link Shortener</h1></div>
+  <div class="mb-5 text-center" style="position: relative;">
+    <h1 class="text-xl font-bold text-indigo-600">Link Shortener</h1>
+    <a id="openSettings" href="#" title="Settings" style="position: absolute; right: 0; top: 2px; text-decoration: none; font-size: 1.1rem;">⚙</a>
+  </div>
 
   <div id="setup" class="hidden mb-3 p-3 rounded-lg bg-amber-50 border-amber text-sm">
     Not configured yet. <a id="openOptions" href="#" class="text-indigo-600 underline">Open settings</a>.
