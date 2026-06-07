@@ -1,23 +1,22 @@
 # url-shortener
 
-A modern, secure, single-user URL shortener on Cloudflare Workers (Hono + D1),
-with a cross-browser extension (separate project). MIT licensed.
+A single-user URL shortener that runs on Cloudflare Workers (Hono + D1), with a
+cross-browser extension as a separate project. MIT licensed.
 
-**This repository contains no secrets.** All credentials — including your
-short-link hostname — are supplied at deploy time via Wrangler Secrets or the
-Cloudflare dashboard.
+**No secrets live in this repo.** Every credential, including your short-link
+hostname, is set at deploy time through Wrangler Secrets or the Cloudflare
+dashboard.
 
-## Features
-- 302 redirects with privacy-friendly click counts (no IPs, no per-visitor logs)
-- REST API (`/api/links`) behind Cloudflare Access + a scoped Bearer token
-- Link safety: scheme allowlist, normalization, anti-SSRF, self-reference block,
-  and a pluggable reputation check (Google Safe Browsing by default)
-- Expiring and one-time / N-click links
-- Admin dashboard at `/admin`
+## What it does
+- Redirects with 302, so disabling or expiring a link takes effect right away, and counts clicks without storing IPs or per-visitor logs
+- Exposes a REST API at `/api/links`, gated by Cloudflare Access plus a scoped Bearer token
+- Checks every destination before saving it: scheme allowlist, normalization, private/internal-host (SSRF) blocking, a self-reference block, and a pluggable reputation lookup (Google Safe Browsing by default)
+- Supports links that expire on a date or self-destruct after N clicks
+- Ships an admin dashboard at `/admin`
 
-## Project layout
-- `shared/` — framework-free validation (Zod schemas, slug rules, URL safety) reused by the worker and the extension
-- `worker/` — the Cloudflare Worker (Hono routes, D1 access, auth, safety pipeline)
+## Layout
+- `shared/`: framework-free validation (Zod schemas, slug rules, URL safety), used by both the worker and the extension
+- `worker/`: the Cloudflare Worker (Hono routes, D1 access, auth, and the safety pipeline)
 
 ## Develop
 ```bash
@@ -46,11 +45,11 @@ npx wrangler secret put SAFE_BROWSING_API_KEY # optional reputation provider
 npm run deploy
 ```
 
-## Protect /admin and /api with Cloudflare Access
-In the Cloudflare Zero Trust dashboard, create an Access application covering
-`/admin*` and `/api/*` on your domain, restricted to your identity. Then set the
-worker secrets `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` so the worker verifies the
-Access JWT as defense-in-depth.
+## Lock down /admin and /api with Cloudflare Access
+In the Cloudflare Zero Trust dashboard, create an Access application that covers
+`/admin*` and `/api/*` on your domain and restrict it to your own identity. Set
+the worker secrets `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` so the worker also
+verifies the Access JWT itself, as a second layer of defense.
 
 ## License
-MIT — see [LICENSE](./LICENSE).
+MIT. See [LICENSE](./LICENSE).
