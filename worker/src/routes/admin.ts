@@ -36,9 +36,21 @@ const PAGE = `<!doctype html>
         var slug = escapeHtml(l.slug);
         var url = escapeHtml(l.url);
         return "<tr><td><a href='/" + slug + "'>" + slug + "</a></td><td>" + url +
-          "</td><td>" + l.click_count + "</td><td><button data-slug='" + slug +
+          "</td><td>" + l.click_count + "</td><td><button data-copy='" + slug +
+          "' class='copy secondary'>Copy</button> <button data-slug='" + slug +
           "' class='del'>Delete</button></td></tr>";
       }).join("");
+      document.querySelectorAll(".copy").forEach(function (b) {
+        b.onclick = async function () {
+          var link = location.origin + "/" + b.dataset.copy;
+          try {
+            await navigator.clipboard.writeText(link);
+            msg.textContent = "Copied " + link;
+          } catch (err) {
+            msg.textContent = "Copy failed — " + link;
+          }
+        };
+      });
       document.querySelectorAll(".del").forEach(function (b) {
         b.onclick = async function () {
           await fetch("/api/links/" + b.dataset.slug, { method: "DELETE" });
