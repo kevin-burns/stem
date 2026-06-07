@@ -8,6 +8,8 @@
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "deploy": "npm --workspace worker run deploy",
-    "update:tracking": "node scripts/update-tracking-params.mjs"
+    "update:tracking": "node scripts/update-tracking-params.mjs",
+    "build:ext": "npm --workspace extension run build",
+    "pack:ext": "npm --workspace extension run pack"
   }
 }

@@ -51,6 +51,19 @@ In the Cloudflare Zero Trust dashboard, create an Access application that covers
 the worker secrets `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` so the worker also
 verifies the Access JWT itself, as a second layer of defense.
 
+## Browser extension
+A Chrome + Firefox (MV3) extension lives in `extension/`. It shortens the current
+tab against your worker, authenticating through Cloudflare Access with a **service
+token**.
+
+Setup:
+1. In Cloudflare Zero Trust → Access → Service Auth, create a service token, and add
+   a Service Auth policy to your URL-Shortener Access app that allows it.
+2. `npm run build:ext` → load `extension/dist/chrome` (Chrome: Load unpacked) or
+   `extension/dist/firefox` (Firefox: about:debugging → Load Temporary Add-on).
+3. Open the extension's Options, enter your server URL and the service token's
+   Client ID + Secret, and grant the host permission when prompted.
+
 ## Notes
 - Link search uses `LIKE '%term%'` (a full table scan) on purpose — at single-user
   scale the table is small and the scan is sub-millisecond. If it ever grows large,
