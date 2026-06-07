@@ -54,15 +54,51 @@ verifies the Access JWT itself, as a second layer of defense.
 ## Browser extension
 A Chrome + Firefox (MV3) extension lives in `extension/`. It shortens the current
 tab against your worker, authenticating through Cloudflare Access with a **service
-token**.
+token** (since `/api` is behind Access, a plain bearer token can't pass the edge).
 
-Setup:
-1. In Cloudflare Zero Trust → Access → Service Auth, create a service token, and add
-   a Service Auth policy to your URL-Shortener Access app that allows it.
-2. `npm run build:ext` → load `extension/dist/chrome` (Chrome: Load unpacked) or
-   `extension/dist/firefox` (Firefox: about:debugging → Load Temporary Add-on).
-3. Open the extension's Options, enter your server URL and the service token's
-   Client ID + Secret, and grant the host permission when prompted.
+### 1. Create the Access service token
+1. Zero Trust → **Access → Service Auth → Create Service Token**. Name it (e.g.
+   `url-shorten-extension`) and **copy the Client ID and Client Secret** — the
+   secret is shown only once. The Client ID ends in `.access`.
+2. Open the Access **application** that protects your short domain (the one covering
+   `/admin*` and `/api/*`) → **Policies → Add a policy**:
+   - **Action must be `Service Auth`**, *not* `Allow`. An `Allow` policy with a
+     service token still expects an interactive login and will be rejected with
+     `service_token_status:false`. (Cloudflare's UI warns about this.)
+   - **Include → Service Token →** your token.
+
+### 2. Build and load
+```bash
+npm run build:ext
+```
+- **Chrome/Brave/Edge:** `chrome://extensions` → enable **Developer mode** → **Load
+  unpacked** → select `extension/dist/chrome`. After a rebuild, click the card's ↻.
+- **Firefox:** `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** →
+  pick `extension/dist/firefox/manifest.json` (temporary; gone on restart).
+
+### 3. Configure
+Open the extension → **⚙** (or right-click the icon → Options) and enter, each value
+pasted verbatim (no header names, no trimming):
+- **Server URL:** your short domain, e.g. `https://l.example.com` (the redirect
+  host, not the apex).
+- **Access Client ID:** the full value including the `.access` suffix.
+- **Access Client Secret:** the full secret.
+
+Click **Save**, then **approve the host-permission prompt**. If it didn't prompt,
+enable it manually: `chrome://extensions` → the extension → **Details → Site access**
+→ turn on the toggle next to your domain. Use **Test connection** to confirm — a
+green ✓ means the token, policy, and permission are all good.
+
+### Troubleshooting
+- **"Failed to fetch"** → the host permission isn't granted for your domain (enable
+  the Site access toggle), or the Server URL points at the wrong host.
+- **"Access rejected — login redirect"** → the Access policy isn't `Service Auth`,
+  or the token isn't on the app covering `/api/*`. Verify with:
+  ```bash
+  curl -sS -o /dev/null -w "%{http_code}\n" \
+    -H "CF-Access-Client-Id: <id>.access" -H "CF-Access-Client-Secret: <secret>" \
+    https://your-short-domain/api/links   # want 200
+  ```
 
 ## Notes
 - Link search uses `LIKE '%term%'` (a full table scan) on purpose — at single-user

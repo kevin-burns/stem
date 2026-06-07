@@ -39,6 +39,11 @@ describe("createLink", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ error: "Unsafe URL", reason: "private host" }), { status: 422 }));
     await expect(createLink(settings, { url: "http://127.0.0.1" })).rejects.toThrow(/private host/i);
   });
+
+  it("reports an access rejection when Access returns a login redirect", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({ type: "opaqueredirect", ok: false, status: 0 } as Response);
+    await expect(createLink(settings, { url: "https://x.com" })).rejects.toThrow(/access|redirect/i);
+  });
 });
 
 describe("listLinks", () => {

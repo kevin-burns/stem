@@ -43,20 +43,29 @@ async function errorFor(res: Response): Promise<Error> {
   return new Error(reason || `Request failed (${res.status}).`);
 }
 
+async function request(url: string, init: RequestInit): Promise<Response> {
+  // redirect: "manual" so a Cloudflare Access login redirect surfaces as a clear
+  // message instead of an opaque "Failed to fetch" when the service token is rejected.
+  const res = await fetch(url, { ...init, redirect: "manual" });
+  if (res.type === "opaqueredirect") {
+    throw new Error("Access rejected — got a login redirect. Check the Service Auth policy on your Access app.");
+  }
+  if (!res.ok) throw await errorFor(res);
+  return res;
+}
+
 export async function createLink(s: Settings, input: CreateInput): Promise<CreatedLink> {
-  const res = await fetch(`${base(s)}/api/links`, {
+  const res = await request(`${base(s)}/api/links`, {
     method: "POST",
     headers: authHeaders(s),
     body: JSON.stringify(input),
   });
-  if (!res.ok) throw await errorFor(res);
   return (await res.json()) as CreatedLink;
 }
 
 export async function listLinks(s: Settings, q?: string): Promise<Link[]> {
   const url = `${base(s)}/api/links` + (q ? `?q=${encodeURIComponent(q)}` : "");
-  const res = await fetch(url, { headers: authHeaders(s) });
-  if (!res.ok) throw await errorFor(res);
+  const res = await request(url, { headers: authHeaders(s) });
   const body = (await res.json()) as { links: Link[] };
   return body.links;
 }
