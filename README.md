@@ -73,8 +73,18 @@ npm run build:ext
 ```
 - **Chrome/Brave/Edge:** `chrome://extensions` → enable **Developer mode** → **Load
   unpacked** → select `extension/dist/chrome`. After a rebuild, click the card's ↻.
-- **Firefox:** `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** →
-  pick `extension/dist/firefox/manifest.json` (temporary; gone on restart).
+- **Firefox:** use **`about:debugging#/runtime/this-firefox` → Load Temporary Add-on**
+  → pick `extension/dist/firefox/manifest.json` (or run `npm run pack:ext` and pick
+  `dist/firefox.zip`). To reload after a rebuild, click **Reload** on the add-on.
+  - Use `about:debugging`, **not** about:addons → "Install Add-on From File" — the
+    latter only accepts **Mozilla-signed** packages and will fail with "could not be
+    installed because it has not been verified."
+  - Temporary add-ons are removed on restart. For a persistent unsigned install use
+    Firefox Developer Edition/Nightly/ESR with `xpinstall.signatures.required=false`;
+    for distribution, sign via addons.mozilla.org.
+  - Requires **Firefox 127+** (for `optional_host_permissions`). After Save, approve
+    the permission doorhanger; if the popup can't reach the server, enable host access
+    under `about:addons` → the extension → Permissions.
 
 ### 3. Configure
 Open the extension → **⚙** (or right-click the icon → Options) and enter, each value
