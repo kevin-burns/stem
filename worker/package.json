@@ -18,10 +18,10 @@
     "jose": "^5.6.0"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.5.41",
+    "@cloudflare/vitest-pool-workers": "^0.16.13",
     "@cloudflare/workers-types": "^4.20240909.0",
     "typescript": "^5.5.0",
-    "vitest": "^2.1.0",
-    "wrangler": "^3.78.0"
+    "vitest": "^4.1.0",
+    "wrangler": "^4.98.0"
   }
 }
