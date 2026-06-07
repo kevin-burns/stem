@@ -2,6 +2,8 @@ export interface SafetyResult {
   ok: boolean;
   reason?: string;
   normalized?: string;
+  /** Tracking/affiliate params removed from the destination, if any. */
+  removed?: string[];
 }
 
 const ALLOWED_SCHEMES = new Set(["http:", "https:"]);

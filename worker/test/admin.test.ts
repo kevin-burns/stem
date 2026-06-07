@@ -40,4 +40,11 @@ describe("GET /admin", () => {
     expect(body).toContain("navigator.clipboard.writeText");
     expect(body).toContain('location.origin + "/" + b.dataset.copy');
   });
+
+  it("surfaces stripped trackers in the create confirmation", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    const body = await res.text();
+    expect(body).toContain("data.stripped");
+    expect(body).toContain("stripped ");
+  });
 });

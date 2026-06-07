@@ -41,17 +41,19 @@ export function registerApi(app: Hono<{ Bindings: Env }>): void {
       max_clicks: body.max_clicks ?? null,
     };
 
+    const stripped = safety.removed ?? [];
+
     if (body.slug) {
       if (await getLink(c.env.DB, body.slug)) return c.json({ error: "Slug already exists" }, 409);
       await insertLink(c.env.DB, { slug: body.slug, ...record });
-      return c.json({ ...(await getLink(c.env.DB, body.slug))!, short_url: shortUrl(c.env, body.slug) }, 201);
+      return c.json({ ...(await getLink(c.env.DB, body.slug))!, short_url: shortUrl(c.env, body.slug), stripped }, 201);
     }
 
     for (let i = 0; i < MAX_SLUG_RETRIES; i++) {
       const slug = generateSlug();
       if (await getLink(c.env.DB, slug)) continue;
       await insertLink(c.env.DB, { slug, ...record });
-      return c.json({ ...(await getLink(c.env.DB, slug))!, short_url: shortUrl(c.env, slug) }, 201);
+      return c.json({ ...(await getLink(c.env.DB, slug))!, short_url: shortUrl(c.env, slug), stripped }, 201);
     }
     return c.json({ error: "Could not allocate a unique slug" }, 500);
   });

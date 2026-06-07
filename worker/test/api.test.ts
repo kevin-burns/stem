@@ -43,6 +43,14 @@ describe("POST /api/links", () => {
     expect(((await res.json()) as { slug: string }).slug).toBe("mine");
   });
 
+  it("strips tracking params on create, stores the clean URL, reports them", async () => {
+    const res = await post({ url: "https://example.com/p?utm_source=x&gclid=1&keep=2", slug: "clean" });
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { url: string; stripped: string[] };
+    expect(body.url).toBe("https://example.com/p?keep=2");
+    expect(body.stripped.sort()).toEqual(["gclid", "utm_source"]);
+  });
+
   it("409s on a duplicate slug", async () => {
     await post({ url: "https://example.com", slug: "dup" });
     const res = await post({ url: "https://example.com", slug: "dup" });

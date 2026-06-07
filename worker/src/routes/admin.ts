@@ -69,8 +69,18 @@ const PAGE = `<!doctype html>
         body: JSON.stringify(body),
       });
       const data = await r.json();
-      msg.textContent = r.ok ? "Created " + data.short_url : "Error: " + (data.reason || data.error);
-      if (r.ok) { e.target.reset(); load(); }
+      if (r.ok) {
+        var note = "Created " + data.short_url;
+        if (data.stripped && data.stripped.length) {
+          note += " — stripped " + data.stripped.length + " tracker" +
+            (data.stripped.length === 1 ? "" : "s") + " (" + data.stripped.join(", ") + ")";
+        }
+        msg.textContent = note;
+        e.target.reset();
+        load();
+      } else {
+        msg.textContent = "Error: " + (data.reason || data.error);
+      }
     };
     load();
   </script>

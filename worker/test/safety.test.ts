@@ -16,6 +16,13 @@ describe("checkUrlSafety", () => {
     expect(r.normalized).toBe("https://example.com/a");
   });
 
+  it("strips tracking params and reports what was removed", async () => {
+    const r = await checkUrlSafety("https://example.com/p?utm_source=x&gclid=1&id=42", env);
+    expect(r.ok).toBe(true);
+    expect(r.normalized).toBe("https://example.com/p?id=42");
+    expect(r.removed?.sort()).toEqual(["gclid", "utm_source"]);
+  });
+
   it("rejects static-unsafe URLs before calling reputation", async () => {
     const r = await checkUrlSafety("javascript:alert(1)", env);
     expect(r.ok).toBe(false);
