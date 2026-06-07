@@ -37,7 +37,10 @@ async function verifyAccessJwt(jwt: string, env: Env): Promise<boolean> {
 export const requireAuth: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
   const header = c.req.header("Authorization");
   if (header?.startsWith("Bearer ")) {
-    if (timingSafeEqual(header.slice(7), c.env.API_TOKEN)) return next();
+    const token = header.slice(7);
+    if (token.length > 0 && c.env.API_TOKEN && timingSafeEqual(token, c.env.API_TOKEN)) {
+      return next();
+    }
   }
   const accessJwt = c.req.header("Cf-Access-Jwt-Assertion");
   if (accessJwt && (await verifyAccessJwt(accessJwt, c.env))) return next();
