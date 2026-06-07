@@ -71,4 +71,10 @@ describe("GET /admin", () => {
     expect(body).toContain("ClipboardItem");
     expect(body).toContain("canvas.toBlob");
   });
+
+  it("clears the copy status when the QR modal is reopened", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    const body = await res.text();
+    expect(body).toContain('qrMsg.textContent = ""');
+  });
 });

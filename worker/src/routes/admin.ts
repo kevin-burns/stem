@@ -113,6 +113,7 @@ const PAGE = `<!doctype html>
       });
       document.querySelectorAll(".qr").forEach(function (b) {
         b.onclick = function () {
+          qrMsg.textContent = ""; // clear any stale "Copied" status from a prior link
           qrImg.src = "/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr?frame=1";
           qrModal.showModal();
         };
