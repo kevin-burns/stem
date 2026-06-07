@@ -42,8 +42,11 @@ async function onSave() {
     setMsg("Server URL is required.", "crimson");
     return;
   }
-  await saveSettings(settings);
+  // Request the host permission FIRST, while the click's user activation is still
+  // valid. Firefox requires permissions.request() to run from the gesture — an
+  // await before it (e.g. saving) drops activation and the request is denied.
   const granted = await ensureHostPermission(settings.serverUrl);
+  await saveSettings(settings);
   setMsg(
     granted ? "Saved." : "Saved, but host permission was denied — grant it so the extension can reach your server.",
     granted ? "" : "crimson",
