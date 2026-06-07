@@ -24,4 +24,12 @@ describe("GET /admin", () => {
     expect(res.headers.get("content-type")).toMatch(/text\/html/);
     expect(await res.text()).toMatch(/<title>/i);
   });
+
+  it("escapes dynamic row values (defense-in-depth)", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    const body = await res.text();
+    expect(body).toContain("function escapeHtml");
+    expect(body).toContain("escapeHtml(l.slug)");
+    expect(body).toContain("escapeHtml(l.url)");
+  });
 });

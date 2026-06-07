@@ -24,12 +24,19 @@ const PAGE = `<!doctype html>
   </main>
   <script>
     const msg = document.getElementById("msg");
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
     async function load() {
       const r = await fetch("/api/links");
       const { links } = await r.json();
       document.getElementById("rows").innerHTML = links.map(function (l) {
-        return "<tr><td><a href='/" + l.slug + "'>" + l.slug + "</a></td><td>" + l.url +
-          "</td><td>" + l.click_count + "</td><td><button data-slug='" + l.slug +
+        var slug = escapeHtml(l.slug);
+        var url = escapeHtml(l.url);
+        return "<tr><td><a href='/" + slug + "'>" + slug + "</a></td><td>" + url +
+          "</td><td>" + l.click_count + "</td><td><button data-slug='" + slug +
           "' class='del'>Delete</button></td></tr>";
       }).join("");
       document.querySelectorAll(".del").forEach(function (b) {
