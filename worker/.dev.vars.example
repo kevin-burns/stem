@@ -1,0 +1,9 @@
+# Copy to .dev.vars (git-ignored) and fill in for local dev.
+API_TOKEN="dev-local-token-change-me"
+# Optional reputation provider credentials:
+SAFE_BROWSING_API_KEY=""
+CF_INTEL_TOKEN=""
+CF_ACCOUNT_ID=""
+# Cloudflare Access (browser JWT verification):
+ACCESS_TEAM_DOMAIN=""   # e.g. myteam.cloudflareaccess.com
+ACCESS_AUD=""           # Access application AUD tag
