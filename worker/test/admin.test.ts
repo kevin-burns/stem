@@ -1,0 +1,27 @@
+import { describe, it, expect } from "vitest";
+import { env } from "cloudflare:test";
+import { Hono } from "hono";
+import { registerAdmin } from "../src/routes/admin.js";
+import { requireAuth } from "../src/middleware/auth.js";
+import type { Env } from "../src/env.js";
+
+function app() {
+  const a = new Hono<{ Bindings: Env }>();
+  a.use("/admin", requireAuth);
+  registerAdmin(a);
+  return a;
+}
+
+describe("GET /admin", () => {
+  it("requires auth", async () => {
+    const res = await app().request("/admin", {}, env);
+    expect(res.status).toBe(401);
+  });
+
+  it("returns the dashboard HTML when authorized", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toMatch(/text\/html/);
+    expect(await res.text()).toMatch(/<title>/i);
+  });
+});
