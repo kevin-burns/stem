@@ -1,4 +1,6 @@
-# url-shortener
+# Stem
+
+**an edge URL shortener**
 
 A single-user URL shortener that runs on Cloudflare Workers (Hono + D1), with a
 Chrome-compatible browser extension. MIT licensed.

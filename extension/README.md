@@ -1,4 +1,4 @@
-# Link Shortener — Browser Extension
+# Stem — Browser Extension
 
 A Chrome extension that shortens the current tab against your
 own deployed worker, authenticating through Cloudflare Access with a **service token**
