@@ -28,7 +28,8 @@ export async function reputationCheck(url: string, env: Env): Promise<Reputation
     }
   } catch (err) {
     // Fail open: a provider outage must not block link creation.
-    console.error("reputationCheck error", err);
+    // Log only the error class — never the raw error, which can embed the destination URL.
+    console.error("reputationCheck failed", { name: (err as Error)?.name });
     return OK;
   }
 }
