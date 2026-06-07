@@ -18,6 +18,7 @@ const PAGE = `<!doctype html>
       <button type="submit">Shorten</button>
     </form>
     <p id="msg" role="status"></p>
+    <input id="search" type="search" placeholder="Search by slug or URL…" />
     <table><thead><tr><th>Slug</th><th>URL</th><th>Clicks</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -30,7 +31,8 @@ const PAGE = `<!doctype html>
       });
     }
     async function load() {
-      const r = await fetch("/api/links");
+      const q = document.getElementById("search").value.trim();
+      const r = await fetch("/api/links" + (q ? "?q=" + encodeURIComponent(q) : ""));
       const { links } = await r.json();
       document.getElementById("rows").innerHTML = links.map(function (l) {
         var slug = escapeHtml(l.slug);
@@ -81,6 +83,11 @@ const PAGE = `<!doctype html>
       } else {
         msg.textContent = "Error: " + (data.reason || data.error);
       }
+    };
+    var searchTimer;
+    document.getElementById("search").oninput = function () {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(load, 200);
     };
     load();
   </script>

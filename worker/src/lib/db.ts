@@ -47,6 +47,19 @@ export async function listLinks(db: D1Database, limit: number): Promise<Link[]> 
   return results.map(rowToLink);
 }
 
+// Case-insensitive substring search over slug and destination URL. The query is
+// escaped so a literal % or _ from the user is not treated as a LIKE wildcard.
+export async function searchLinks(db: D1Database, query: string, limit: number): Promise<Link[]> {
+  const like = `%${query.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
+  const { results } = await db
+    .prepare(
+      "SELECT * FROM links WHERE slug LIKE ?1 ESCAPE '\\' OR url LIKE ?1 ESCAPE '\\' ORDER BY created_at DESC LIMIT ?2",
+    )
+    .bind(like, limit)
+    .all<LinkRow>();
+  return results.map(rowToLink);
+}
+
 export async function recordClick(db: D1Database, slug: string, at: number): Promise<void> {
   await db
     .prepare("UPDATE links SET click_count = click_count + 1, last_clicked = ? WHERE slug = ?")

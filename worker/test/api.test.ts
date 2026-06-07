@@ -78,6 +78,15 @@ describe("GET/PATCH/DELETE /api/links", () => {
     expect(body.links.map((l) => l.slug)).toEqual(["b", "a"]);
   });
 
+  it("searches links via ?q= (slug or destination URL)", async () => {
+    await post({ url: "https://github.com/x", slug: "gh" });
+    await post({ url: "https://example.com", slug: "ex" });
+    const byUrl = (await (await app().request("/api/links?q=github", { headers: AUTH }, env)).json()) as { links: { slug: string }[] };
+    expect(byUrl.links.map((l) => l.slug)).toEqual(["gh"]);
+    const bySlug = (await (await app().request("/api/links?q=ex", { headers: AUTH }, env)).json()) as { links: { slug: string }[] };
+    expect(bySlug.links.map((l) => l.slug)).toEqual(["ex"]);
+  });
+
   it("gets a single link and 404s a missing one", async () => {
     await post({ url: "https://example.com", slug: "one" });
     expect((await app().request("/api/links/one", { headers: AUTH }, env)).status).toBe(200);

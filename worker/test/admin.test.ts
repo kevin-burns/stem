@@ -47,4 +47,12 @@ describe("GET /admin", () => {
     expect(body).toContain("data.stripped");
     expect(body).toContain("stripped ");
   });
+
+  it("includes a debounced search box that queries ?q=", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    const body = await res.text();
+    expect(body).toContain('id="search"');
+    expect(body).toContain('"?q=" + encodeURIComponent(q)');
+    expect(body).toContain("setTimeout(load");
+  });
 });

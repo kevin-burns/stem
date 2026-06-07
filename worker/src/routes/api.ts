@@ -4,7 +4,7 @@ import type { Env } from "../env.js";
 import { requireAuth } from "../middleware/auth.js";
 import { checkUrlSafety } from "../lib/safety.js";
 import { nowSeconds } from "../lib/time.js";
-import { insertLink, getLink, listLinks, patchLink, deleteLink } from "../lib/db.js";
+import { insertLink, getLink, listLinks, searchLinks, patchLink, deleteLink } from "../lib/db.js";
 
 const MAX_SLUG_RETRIES = 5;
 
@@ -61,7 +61,8 @@ export function registerApi(app: Hono<{ Bindings: Env }>): void {
   app.get("/api/links", async (c) => {
     const raw = Number(c.req.query("limit") ?? "50");
     const limit = Math.min(Math.max(Number.isFinite(raw) ? raw : 50, 1), 100);
-    const links = await listLinks(c.env.DB, limit);
+    const q = c.req.query("q")?.trim();
+    const links = q ? await searchLinks(c.env.DB, q, limit) : await listLinks(c.env.DB, limit);
     return c.json({ links });
   });
 
