@@ -17,8 +17,10 @@ function isGlobalTrackingKey(lowerKey: string): boolean {
   return GLOBAL_TRACKING_PREFIXES.some((prefix) => lowerKey.startsWith(prefix));
 }
 
+// Matches amazon.<tld> and <sub>.amazon.<tld>, including amazon.co.uk /
+// amazon.com.br, but NOT spoofs like amazon.com.evil.com.
 function isAmazonHost(hostname: string): boolean {
-  return /(^|\.)amazon\.[a-z.]+$/i.test(hostname);
+  return /(^|\.)amazon\.(com?|[a-z]{2,3})(\.[a-z]{2})?$/i.test(hostname);
 }
 
 function isAmazonAffiliateKey(lowerKey: string): boolean {

@@ -50,6 +50,12 @@ describe("stripTracking", () => {
     expect(r.removed).toEqual(["tag"]);
   });
 
+  it("does NOT treat amazon-spoofing hosts as Amazon", () => {
+    const r = stripTracking("https://amazon.com.evil.example/p?tag=keepme");
+    expect(r.url).toBe("https://amazon.com.evil.example/p?tag=keepme");
+    expect(r.removed).toEqual([]);
+  });
+
   it("returns the input unchanged when it cannot be parsed", () => {
     const r = stripTracking("not a url");
     expect(r.url).toBe("not a url");
