@@ -2,6 +2,7 @@ import browser from "../lib/browser.js";
 import { getSettings, isConfigured, type Settings } from "../lib/settings.js";
 import { createLink, listLinks } from "../lib/api.js";
 import { isValidSlug } from "@url-shortener/shared";
+import { openQrOverlay } from "./qr.js";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const msg = $<HTMLParagraphElement>("msg");
@@ -33,11 +34,15 @@ async function renderRecent(q?: string): Promise<void> {
       const span = document.createElement("span");
       span.className = "truncate w-40";
       span.textContent = `${host(settings.serverUrl)}/${l.slug}`;
+      const qrBtn = document.createElement("button");
+      qrBtn.className = "btn-copy";
+      qrBtn.textContent = "QR";
+      qrBtn.onclick = () => openQrOverlay(`${settings.serverUrl}/${l.slug}`);
       const btn = document.createElement("button");
       btn.className = "btn-copy";
       btn.textContent = "Copy";
       btn.onclick = () => navigator.clipboard.writeText(`${settings.serverUrl}/${l.slug}`);
-      row.append(span, btn);
+      row.append(span, qrBtn, btn);
       recent.append(row);
     }
   } catch (err) {

@@ -46,3 +46,7 @@ button { cursor: pointer; border: none; padding: 8px 16px; border-radius: 8px; f
 .slug-wrap { overflow: hidden; }
 .slug-wrap input { border: none; }
 .slug-prefix { white-space: nowrap; }
+.qr-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.qr-card { background: white; padding: 16px; border-radius: 12px; width: 100%; max-width: 280px; text-align: center; }
+.qr-code svg { display: block; width: 100%; max-width: 220px; height: auto; margin: 0 auto; }
+.qr-label { font-size: 0.75rem; color: #6b7280; word-break: break-all; margin: 8px 0 12px; }
