@@ -1,7 +1,7 @@
 # url-shortener
 
 A single-user URL shortener that runs on Cloudflare Workers (Hono + D1), with a
-cross-browser extension as a separate project. MIT licensed.
+Chrome-compatible browser extension. MIT licensed.
 
 **No secrets live in this repo.** Every credential, including your short-link
 hostname, is set at deploy time through Wrangler Secrets or the Cloudflare
@@ -13,6 +13,20 @@ dashboard.
 - Checks every destination before saving it: scheme allowlist, normalization, private/internal-host (SSRF) blocking, a self-reference block, and a pluggable reputation lookup (Google Safe Browsing by default)
 - Supports links that expire on a date or self-destruct after N clicks
 - Ships an admin dashboard at `/admin`
+- Generates a QR code for any short link — in the dashboard (a `GET /api/links/:slug/qr` SVG endpoint) and in the extension popup (rendered client-side)
+
+## Admin dashboard
+The dashboard at `/admin` (behind Cloudflare Access) lists your links and creates new ones:
+
+![The admin dashboard, with numbered callouts](images/admin-dashboard.webp)
+
+1. Paste a destination URL
+2. Optional custom slug
+3. Shorten it
+4. Search by slug or destination
+5. Copy the short link
+6. Show its QR code
+7. Delete the link
 
 ## Layout
 - `shared/`: framework-free validation (Zod schemas, slug rules, URL safety), used by both the worker and the extension

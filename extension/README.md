@@ -1,14 +1,28 @@
 # Link Shortener — Browser Extension
 
-A Chrome + Firefox (Manifest V3) extension that shortens the current tab against your
+A Chrome extension that shortens the current tab against your
 own deployed worker, authenticating through Cloudflare Access with a **service token**
 (since `/api` is behind Access, a plain bearer token can't pass the edge). Part of the
 [url-shortener](../README.md) monorepo; reuses validation from `../shared`.
 
 **Features:** shorten the active tab (copies to clipboard) · optional custom slug,
 expiry (1h/24h/7d) and one-time links · recent-links list with search and per-row
-copy · tracking/affiliate params stripped automatically · Options page with a
+copy · QR code for any recent link · tracking/affiliate params stripped
+automatically · Options page with a
 **Test connection** check and least-privilege host permission.
+
+<img src="../images/extension-panel.webp" width="360" alt="The extension popup, with numbered callouts" />
+
+1. Settings (gear)
+2. Optional custom slug
+3. Expiry / one-time use
+4. Shorten the current tab
+5. Show a recent link's QR code
+6. Copy a recent link
+
+Tapping **QR** opens a scannable "scan me" card you can copy as an image:
+
+<img src="../images/extension-qr.webp" width="300" alt="The QR code card with Copy image and Close buttons" />
 
 ## 1. Create the Access service token
 1. Zero Trust → **Access → Service Auth → Create Service Token**. Name it (e.g.
@@ -27,7 +41,8 @@ npm run build:ext
 ```
 - **Chrome/Brave/Edge:** `chrome://extensions` → enable **Developer mode** → **Load
   unpacked** → select `extension/dist/chrome`. After a rebuild, click the card's ↻.
-- **Firefox:** use **`about:debugging#/runtime/this-firefox` → Load Temporary Add-on**
+
+<!-- - **Firefox:** use **`about:debugging#/runtime/this-firefox` → Load Temporary Add-on**
   → pick `extension/dist/firefox/manifest.json` (or run `npm run pack:ext` and pick
   `dist/firefox.zip`). To reload after a rebuild, click **Reload** on the add-on.
   - Use `about:debugging`, **not** about:addons → "Install Add-on From File" — the
@@ -38,7 +53,7 @@ npm run build:ext
     for distribution, sign via addons.mozilla.org.
   - Requires **Firefox 127+** (for `optional_host_permissions`). After Save, approve
     the permission doorhanger; if the popup can't reach the server, enable host access
-    under `about:addons` → the extension → Permissions.
+    under `about:addons` → the extension → Permissions. -->
 
 ## 3. Configure
 Open the extension → **⚙** (or right-click the icon → Options) and enter, each value
@@ -47,6 +62,13 @@ pasted verbatim (no header names, no trimming):
   host, not the apex).
 - **Access Client ID:** the full value including the `.access` suffix.
 - **Access Client Secret:** the full secret.
+
+<img src="../images/extension-settings.webp" width="480" alt="The extension settings page, with numbered callouts" />
+
+1. Server URL — your short domain
+2. Access Client ID (ends in `.access`)
+3. Access Client Secret
+4. **Test connection** — confirms the token, policy, and host permission
 
 Click **Save**, then **approve the host-permission prompt**. If it didn't prompt,
 enable it manually: `chrome://extensions` → the extension → **Details → Site access**

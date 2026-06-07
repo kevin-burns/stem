@@ -9,3 +9,6 @@ dist/
 
 # Local-only design docs (specs/plans) — kept with the project, not published
 docs/
+# dont bundle the extension for firefox, since it has to be signed by mozilla and we dont want to have to sign it every time we make a change
+extension/dist/firefox.zip
+extension/dist/firefox
