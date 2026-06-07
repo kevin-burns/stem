@@ -9,7 +9,7 @@ dashboard.
 
 ## What it does
 - Redirects with 302, so disabling or expiring a link takes effect right away, and counts clicks without storing IPs or per-visitor logs
-- Exposes a REST API at `/api/links`, gated by Cloudflare Access plus a scoped Bearer token
+- Exposes a REST API at `/api/links`. The worker verifies either a scoped Bearer token or a Cloudflare Access JWT; put Access in front of `/api` and clients (browser dashboard, extension via an Access service token) authenticate through it
 - Checks every destination before saving it: scheme allowlist, normalization, private/internal-host (SSRF) blocking, a self-reference block, and a pluggable reputation lookup (Google Safe Browsing by default)
 - Supports links that expire on a date or self-destruct after N clicks
 - Ships an admin dashboard at `/admin`

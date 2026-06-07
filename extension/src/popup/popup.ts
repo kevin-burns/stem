@@ -53,6 +53,7 @@ async function renderRecent(q?: string): Promise<void> {
 async function onShorten(): Promise<void> {
   const url = $<HTMLInputElement>("url").value.trim();
   const slug = $<HTMLInputElement>("slug").value.trim();
+  if (!url) { msg.textContent = "No URL to shorten."; return; }
   if (slug && !isValidSlug(slug)) { msg.textContent = "Invalid slug."; return; }
   msg.textContent = "Shortening…";
   try {
