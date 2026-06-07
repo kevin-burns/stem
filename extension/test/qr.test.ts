@@ -16,9 +16,14 @@ describe("openQrOverlay", () => {
     expect(document.querySelector(".qr-label")?.textContent).toBe("https://l.example.com/abc");
   });
 
+  it("offers a Copy-image button", () => {
+    openQrOverlay("https://l.example.com/abc");
+    expect(document.querySelector("#qrOverlay .qr-copy")?.textContent).toBe("Copy image");
+  });
+
   it("closes when the Close button is clicked", () => {
     openQrOverlay("https://l.example.com/abc");
-    (document.querySelector("#qrOverlay button") as HTMLButtonElement).click();
+    (document.querySelector("#qrOverlay .qr-close") as HTMLButtonElement).click();
     expect(document.getElementById("qrOverlay")).toBeNull();
   });
 
