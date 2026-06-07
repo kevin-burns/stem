@@ -51,5 +51,11 @@ In the Cloudflare Zero Trust dashboard, create an Access application that covers
 the worker secrets `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` so the worker also
 verifies the Access JWT itself, as a second layer of defense.
 
+## Notes
+- Link search uses `LIKE '%term%'` (a full table scan) on purpose — at single-user
+  scale the table is small and the scan is sub-millisecond. If it ever grows large,
+  switch to an FTS5 `trigram` virtual table kept in sync with triggers (mind the
+  3-character minimum and D1's no-export-for-virtual-tables caveat).
+
 ## License
 MIT. See [LICENSE](./LICENSE).

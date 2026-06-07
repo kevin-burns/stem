@@ -49,6 +49,13 @@ export async function listLinks(db: D1Database, limit: number): Promise<Link[]> 
 
 // Case-insensitive substring search over slug and destination URL. The query is
 // escaped so a literal % or _ from the user is not treated as a LIKE wildcard.
+//
+// `LIKE '%term%'` is a full table scan — a leading wildcard can't use a B-tree
+// index. That is the right trade-off at single-user scale: the links table is
+// small and the scan is sub-millisecond. If this ever holds a very large number
+// of links, switch to an FTS5 `trigram` virtual table kept in sync with triggers
+// and query it with MATCH. Caveats to weigh then: trigram ignores queries shorter
+// than 3 characters, and D1 export doesn't support virtual tables.
 export async function searchLinks(db: D1Database, query: string, limit: number): Promise<Link[]> {
   const like = `%${query.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
   const { results } = await db
