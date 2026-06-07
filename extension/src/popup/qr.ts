@@ -3,29 +3,26 @@ import { qrSvg } from "@url-shortener/shared";
 // Rasterise the QR SVG to a PNG and put it on the clipboard. Uses canvas + the
 // async Clipboard API — available in the extension popup (clipboardWrite
 // permission), but not in jsdom, so this is exercised manually, not unit-tested.
+// The SVG is loaded through a data: URL (canvas-clean — a blob/element source can
+// taint the canvas in Chromium and break toBlob).
 export async function copyQrImage(svg: string, size = 512): Promise<void> {
-  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-  try {
-    const img = new Image();
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error("could not render the QR image"));
-      img.src = url;
-    });
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("canvas unavailable");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, size, size);
-    ctx.drawImage(img, 0, 0, size, size);
-    const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-    if (!png) throw new Error("could not encode the PNG");
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  const img = new Image();
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error("could not render the QR image"));
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  });
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas unavailable");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, size, size);
+  ctx.drawImage(img, 0, 0, size, size);
+  const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+  if (!png) throw new Error("could not encode the PNG");
+  await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
 }
 
 // Show a modal overlay with the QR code for `shortUrl`, plus Copy-image and Close

@@ -25,7 +25,7 @@ const PAGE = `<!doctype html>
     <dialog id="qrModal">
       <article>
         <img id="qrImg" alt="QR code" style="display:block;margin:0 auto;width:240px;height:240px" />
-        <footer><button id="qrCopy" class="secondary">Copy image</button> <button id="qrClose">Close</button></footer>
+        <footer><span id="qrMsg" style="margin-right:auto;font-size:.85em;color:var(--pico-muted-color)"></span><button id="qrCopy" class="secondary">Copy image</button> <button id="qrClose">Close</button></footer>
       </article>
     </dialog>
   </main>
@@ -35,23 +35,37 @@ const PAGE = `<!doctype html>
     const qrImg = document.getElementById("qrImg");
     qrModal.addEventListener("click", function (e) { if (e.target === qrModal) qrModal.close(); });
     document.getElementById("qrClose").onclick = function () { qrModal.close(); };
+    var qrMsg = document.getElementById("qrMsg");
+    // Rasterise the QR to a PNG and put it on the clipboard. Drawing the live SVG
+    // <img> straight to a canvas can taint it in Chromium, so we fetch the SVG
+    // markup and load it through a canvas-clean data: URL instead.
+    async function qrPngBlob(size) {
+      var svgText = await (await fetch(qrImg.src)).text();
+      var img = new Image();
+      await new Promise(function (res, rej) {
+        img.onload = res;
+        img.onerror = function () { rej(new Error("could not render the QR image")); };
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
+      });
+      var canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      return await new Promise(function (res, rej) {
+        canvas.toBlob(function (b) { b ? res(b) : rej(new Error("could not encode the PNG")); }, "image/png");
+      });
+    }
     document.getElementById("qrCopy").onclick = async function () {
-      var b = this, orig = b.textContent;
+      qrMsg.textContent = "Copying…";
       try {
-        // qrImg is a same-origin SVG, so drawing it to a canvas does not taint it.
-        var size = 512;
-        var canvas = document.createElement("canvas");
-        canvas.width = size; canvas.height = size;
-        var ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, size, size);
-        ctx.drawImage(qrImg, 0, 0, size, size);
-        var blob = await new Promise(function (res) { canvas.toBlob(res, "image/png"); });
+        var blob = await qrPngBlob(512);
         await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        b.textContent = "Copied!";
+        qrMsg.textContent = "Copied to clipboard";
       } catch (err) {
-        b.textContent = "Copy failed";
+        console.error("QR copy failed:", err);
+        qrMsg.textContent = "Copy failed — " + ((err && err.message) || err);
       }
-      setTimeout(function () { b.textContent = orig; }, 1500);
     };
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, function (c) {
