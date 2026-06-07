@@ -21,6 +21,8 @@ automatically · Options page with a
 6. Show a recent link's QR code
 7. Copy a recent link
 
+The **⚙ gear** at the top-right opens settings.
+
 Tapping **QR** opens a scannable "scan me" card you can copy as an image:
 
 <img src="../images/extension-qr.webp" width="300" alt="The QR code card with Copy image and Close buttons" />
