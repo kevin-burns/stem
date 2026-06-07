@@ -41,7 +41,12 @@ async function renderRecent(q?: string): Promise<void> {
       recent.append(row);
     }
   } catch (err) {
-    recent.innerHTML = `<p class="text-xs text-red-600">${(err as Error).message}</p>`;
+    // textContent (not innerHTML): the message can include server-supplied text.
+    recent.innerHTML = "";
+    const p = document.createElement("p");
+    p.className = "text-xs text-red-600";
+    p.textContent = (err as Error).message;
+    recent.append(p);
   }
 }
 
