@@ -1,5 +1,5 @@
 import type { Hono } from "hono";
-import { createLinkSchema, patchLinkSchema, generateSlug } from "@url-shortener/shared";
+import { createLinkSchema, patchLinkSchema, generateSlug, qrSvg } from "@url-shortener/shared";
 import type { Env } from "../env.js";
 import { requireAuth } from "../middleware/auth.js";
 import { checkUrlSafety } from "../lib/safety.js";
@@ -70,6 +70,16 @@ export function registerApi(app: Hono<{ Bindings: Env }>): void {
     const link = await getLink(c.env.DB, c.req.param("slug"));
     if (!link) return c.json({ error: "Not found" }, 404);
     return c.json({ ...link, short_url: shortUrl(c.env, link.slug) });
+  });
+
+  app.get("/api/links/:slug/qr", async (c) => {
+    const link = await getLink(c.env.DB, c.req.param("slug"));
+    if (!link) return c.json({ error: "Not found" }, 404);
+    const svg = qrSvg(shortUrl(c.env, link.slug));
+    return c.body(svg, 200, {
+      "content-type": "image/svg+xml; charset=utf-8",
+      "cache-control": "private, max-age=3600",
+    });
   });
 
   app.patch("/api/links/:slug", async (c) => {

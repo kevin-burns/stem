@@ -111,3 +111,24 @@ describe("GET/PATCH/DELETE /api/links", () => {
     expect((await app().request("/api/links/d", { headers: AUTH }, env)).status).toBe(404);
   });
 });
+
+describe("GET /api/links/:slug/qr", () => {
+  it("requires auth", async () => {
+    await post({ url: "https://example.com", slug: "qauth" });
+    const res = await app().request("/api/links/qauth/qr", {}, env);
+    expect(res.status).toBe(401);
+  });
+
+  it("returns an SVG QR for an existing slug", async () => {
+    await post({ url: "https://example.com", slug: "qok" });
+    const res = await app().request("/api/links/qok/qr", { headers: AUTH }, env);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toMatch(/image\/svg\+xml/);
+    expect(await res.text()).toMatch(/^<svg/);
+  });
+
+  it("404s for a missing slug", async () => {
+    const res = await app().request("/api/links/nope/qr", { headers: AUTH }, env);
+    expect(res.status).toBe(404);
+  });
+});
