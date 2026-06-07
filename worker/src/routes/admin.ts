@@ -22,9 +22,19 @@ const PAGE = `<!doctype html>
     <table><thead><tr><th>Slug</th><th>URL</th><th>Clicks</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
+    <dialog id="qrModal">
+      <article>
+        <img id="qrImg" alt="QR code" style="display:block;margin:0 auto;width:240px;height:240px" />
+        <footer><button id="qrClose">Close</button></footer>
+      </article>
+    </dialog>
   </main>
   <script>
     const msg = document.getElementById("msg");
+    const qrModal = document.getElementById("qrModal");
+    const qrImg = document.getElementById("qrImg");
+    qrModal.addEventListener("click", function (e) { if (e.target === qrModal) qrModal.close(); });
+    document.getElementById("qrClose").onclick = function () { qrModal.close(); };
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, function (c) {
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -39,7 +49,8 @@ const PAGE = `<!doctype html>
         var url = escapeHtml(l.url);
         return "<tr><td><a href='/" + slug + "'>" + slug + "</a></td><td>" + url +
           "</td><td>" + l.click_count + "</td><td><button data-copy='" + slug +
-          "' class='copy secondary'>Copy</button> <button data-slug='" + slug +
+          "' class='copy secondary'>Copy</button> <button data-qr='" + slug +
+          "' class='qr secondary'>QR</button> <button data-slug='" + slug +
           "' class='del'>Delete</button></td></tr>";
       }).join("");
       document.querySelectorAll(".copy").forEach(function (b) {
@@ -57,6 +68,12 @@ const PAGE = `<!doctype html>
         b.onclick = async function () {
           await fetch("/api/links/" + b.dataset.slug, { method: "DELETE" });
           load();
+        };
+      });
+      document.querySelectorAll(".qr").forEach(function (b) {
+        b.onclick = function () {
+          qrImg.src = "/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr";
+          qrModal.showModal();
         };
       });
     }

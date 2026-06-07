@@ -55,4 +55,12 @@ describe("GET /admin", () => {
     expect(body).toContain('"?q=" + encodeURIComponent(q)');
     expect(body).toContain("setTimeout(load");
   });
+
+  it("offers a QR button per row that opens the slug's qr endpoint", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    const body = await res.text();
+    expect(body).toContain("class='qr");
+    expect(body).toContain('"/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr"');
+    expect(body).toContain('id="qrModal"');
+  });
 });
