@@ -25,7 +25,7 @@ const PAGE = `<!doctype html>
     <dialog id="qrModal">
       <article>
         <img id="qrImg" alt="QR code" style="display:block;margin:0 auto;width:240px;height:240px" />
-        <footer><button id="qrClose">Close</button></footer>
+        <footer><button id="qrCopy" class="secondary">Copy image</button> <button id="qrClose">Close</button></footer>
       </article>
     </dialog>
   </main>
@@ -35,6 +35,24 @@ const PAGE = `<!doctype html>
     const qrImg = document.getElementById("qrImg");
     qrModal.addEventListener("click", function (e) { if (e.target === qrModal) qrModal.close(); });
     document.getElementById("qrClose").onclick = function () { qrModal.close(); };
+    document.getElementById("qrCopy").onclick = async function () {
+      var b = this, orig = b.textContent;
+      try {
+        // qrImg is a same-origin SVG, so drawing it to a canvas does not taint it.
+        var size = 512;
+        var canvas = document.createElement("canvas");
+        canvas.width = size; canvas.height = size;
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(qrImg, 0, 0, size, size);
+        var blob = await new Promise(function (res) { canvas.toBlob(res, "image/png"); });
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        b.textContent = "Copied!";
+      } catch (err) {
+        b.textContent = "Copy failed";
+      }
+      setTimeout(function () { b.textContent = orig; }, 1500);
+    };
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, function (c) {
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];

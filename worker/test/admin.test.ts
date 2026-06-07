@@ -63,4 +63,12 @@ describe("GET /admin", () => {
     expect(body).toContain('"/api/links/" + encodeURIComponent(b.dataset.qr) + "/qr"');
     expect(body).toContain('id="qrModal"');
   });
+
+  it("lets you copy the QR modal image to the clipboard", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    const body = await res.text();
+    expect(body).toContain('id="qrCopy"');
+    expect(body).toContain("ClipboardItem");
+    expect(body).toContain("canvas.toBlob");
+  });
 });
