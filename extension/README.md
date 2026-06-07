@@ -13,12 +13,13 @@ automatically · Options page with a
 
 <img src="../images/extension-panel.webp" width="360" alt="The extension popup, with numbered callouts" />
 
-1. Settings (gear)
+1. Target URL (auto-filled from the current tab)
 2. Optional custom slug
 3. Expiry / one-time use
 4. Shorten the current tab
-5. Show a recent link's QR code
-6. Copy a recent link
+5. Search your recent links
+6. Show a recent link's QR code
+7. Copy a recent link
 
 Tapping **QR** opens a scannable "scan me" card you can copy as an image:
 
@@ -68,7 +69,8 @@ pasted verbatim (no header names, no trimming):
 1. Server URL — your short domain
 2. Access Client ID (ends in `.access`)
 3. Access Client Secret
-4. **Test connection** — confirms the token, policy, and host permission
+4. **Save**
+5. **Test connection** — confirms the token, policy, and host permission
 
 Click **Save**, then **approve the host-permission prompt**. If it didn't prompt,
 enable it manually: `chrome://extensions` → the extension → **Details → Site access**
