@@ -56,16 +56,18 @@ const PAGE = `<!doctype html>
         canvas.toBlob(function (b) { b ? res(b) : rej(new Error("could not encode the PNG")); }, "image/png");
       });
     }
-    document.getElementById("qrCopy").onclick = async function () {
+    document.getElementById("qrCopy").onclick = function () {
       qrMsg.textContent = "Copying…";
-      try {
-        var blob = await qrPngBlob(512);
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-        qrMsg.textContent = "Copied to clipboard";
-      } catch (err) {
-        console.error("QR copy failed:", err);
-        qrMsg.textContent = "Copy failed — " + ((err && err.message) || err);
-      }
+      // Call clipboard.write synchronously within the click and hand ClipboardItem
+      // a Promise<Blob> — awaiting the blob first would burn the user-activation
+      // window and Chrome rejects the write with NotAllowedError.
+      navigator.clipboard.write([new ClipboardItem({ "image/png": qrPngBlob(512) })]).then(
+        function () { qrMsg.textContent = "Copied to clipboard"; },
+        function (err) {
+          console.error("QR copy failed:", err);
+          qrMsg.textContent = "Copy failed — " + ((err && err.message) || err);
+        }
+      );
     };
     function escapeHtml(s) {
       return String(s).replace(/[&<>"']/g, function (c) {

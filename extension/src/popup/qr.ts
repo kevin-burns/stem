@@ -1,11 +1,9 @@
 import { qrSvg } from "@url-shortener/shared";
 
-// Rasterise the QR SVG to a PNG and put it on the clipboard. Uses canvas + the
-// async Clipboard API — available in the extension popup (clipboardWrite
-// permission), but not in jsdom, so this is exercised manually, not unit-tested.
-// The SVG is loaded through a data: URL (canvas-clean — a blob/element source can
-// taint the canvas in Chromium and break toBlob).
-export async function copyQrImage(svg: string, size = 512): Promise<void> {
+// Rasterise the QR SVG to a PNG blob. The SVG is loaded through a data: URL
+// (canvas-clean — a blob/element source can taint the canvas in Chromium and
+// break toBlob). Uses canvas, so it runs in the popup but not in jsdom.
+async function qrPngBlob(svg: string, size: number): Promise<Blob> {
   const img = new Image();
   await new Promise<void>((resolve, reject) => {
     img.onload = () => resolve();
@@ -22,7 +20,14 @@ export async function copyQrImage(svg: string, size = 512): Promise<void> {
   ctx.drawImage(img, 0, 0, size, size);
   const png = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
   if (!png) throw new Error("could not encode the PNG");
-  await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+  return png;
+}
+
+// Put the QR PNG on the clipboard. NOT async on purpose: clipboard.write must be
+// called synchronously inside the click gesture, so we hand ClipboardItem the
+// blob Promise — awaiting it first would lose user activation (NotAllowedError).
+export function copyQrImage(svg: string, size = 512): Promise<void> {
+  return navigator.clipboard.write([new ClipboardItem({ "image/png": qrPngBlob(svg, size) })]);
 }
 
 // Show a modal overlay with the QR code for `shortUrl`, plus Copy-image and Close
