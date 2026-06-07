@@ -1,0 +1,48 @@
+body { font-family: system-ui, sans-serif; background-color: #f9fafb; color: #1f2937; width: 380px; padding: 16px; margin: 0; }
+h1 { margin: 0; }
+.bg-white { background-color: white; }
+.bg-gray-100 { background-color: #f3f4f6; }
+.bg-amber-50 { background-color: #fffbeb; }
+.text-indigo-600 { color: #4f46e5; }
+.text-gray-500 { color: #6b7280; }
+.text-red-600 { color: #dc2626; }
+.text-center { text-align: center; }
+.p-4 { padding: 16px; }
+.p-3 { padding: 12px; }
+.p-2 { padding: 8px; }
+.mb-6 { margin-bottom: 24px; }
+.mb-5 { margin-bottom: 20px; }
+.mb-3 { margin-bottom: 12px; }
+.mb-1 { margin-bottom: 4px; }
+.pt-4 { padding-top: 16px; }
+.border-t { border-top: 1px solid #e5e7eb; }
+.border { border: 1px solid #d1d5db; }
+.border-amber { border: 1px solid #fcd34d; }
+.rounded-xl { border-radius: 12px; }
+.rounded-lg { border-radius: 8px; }
+.rounded { border-radius: 4px; }
+.shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+.w-full { width: 100%; }
+.w-24 { width: 96px; }
+.w-40 { width: 160px; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.space-y-3 > * + * { margin-top: 12px; }
+.space-y-2 > * + * { margin-top: 8px; }
+.font-bold { font-weight: 700; }
+.font-semibold { font-weight: 600; }
+.text-xl { font-size: 1.25rem; }
+.text-sm { font-size: 0.875rem; }
+.text-xs { font-size: 0.75rem; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.underline { text-decoration: underline; }
+.hidden { display: none; }
+input, select { border: 1px solid #d1d5db; padding: 8px; border-radius: 8px; font-size: 0.875rem; width: 100%; box-sizing: border-box; }
+button { cursor: pointer; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; }
+.btn-primary { background-color: #4f46e5; color: white; }
+.btn-copy { background-color: #f3f4f6; font-size: 0.75rem; padding: 4px 8px; width: auto; }
+.slug-wrap { overflow: hidden; }
+.slug-wrap input { border: none; }
+.slug-prefix { white-space: nowrap; }
