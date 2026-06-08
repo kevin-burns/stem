@@ -38,12 +38,19 @@ Tapping **QR** opens a scannable "scan me" card you can copy as an image:
      `service_token_status:false`. (Cloudflare's UI warns about this.)
    - **Include → Service Token →** your token.
 
-## 2. Build and load
+## 2. Get it — download or build
+
+**Download (no build):** grab `chrome.zip` from the
+[latest release](https://github.com/kevin-burns/stem/releases/latest) and unzip it.
+
+**Or build from source:**
 ```bash
 npm run build:ext
 ```
-- **Chrome/Brave/Edge:** `chrome://extensions` → enable **Developer mode** → **Load
-  unpacked** → select `extension/dist/chrome`. After a rebuild, click the card's ↻.
+
+**Load it (Chrome/Brave/Edge/Vivaldi/Arc):** `chrome://extensions` → enable
+**Developer mode** → **Load unpacked** → select the unzipped folder (or
+`extension/dist/chrome` if you built it). After a rebuild, click the card's ↻.
 
 <!-- - **Firefox:** use **`about:debugging#/runtime/this-firefox` → Load Temporary Add-on**
   → pick `extension/dist/firefox/manifest.json` (or run `npm run pack:ext` and pick
