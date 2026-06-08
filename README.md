@@ -26,9 +26,11 @@ The dashboard at `/admin` (behind Cloudflare Access) lists your links and create
 2. Optional custom slug
 3. Shorten it
 4. Search by slug or destination
-5. Copy the short link
-6. Show its QR code
-7. Delete the link
+5. Hide inactive links (expired / disabled / used up)
+6. Delete all inactive links in one go
+7. Copy the short link
+8. Show its QR code
+9. Delete the link
 
 Links that have expired, been disabled, or used up their one-time click stay in the
 database — expiry is a soft check (the redirect returns `410 Gone`; the row isn't

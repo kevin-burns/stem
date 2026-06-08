@@ -78,8 +78,10 @@ pasted verbatim (no header names, no trimming):
 1. Server URL — your short domain
 2. Access Client ID (ends in `.access`)
 3. Access Client Secret
-4. **Save**
-5. **Test connection** — confirms the token, policy, and host permission
+4. QR color (scannable dark presets)
+5. QR caption (default "SCAN ME")
+6. **Save**
+7. **Test connection** — confirms the token, policy, and host permission
 
 Click **Save**, then **approve the host-permission prompt**. If it didn't prompt,
 enable it manually: `chrome://extensions` → the extension → **Details → Site access**
