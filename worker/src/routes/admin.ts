@@ -14,6 +14,10 @@ const PAGE = `<!doctype html>
     .badge { font-size: .7em; font-weight: 600; padding: .1em .45em; border-radius: .4em;
       background: var(--pico-muted-border-color, #e5e7eb); color: var(--pico-muted-color, #555);
       vertical-align: middle; white-space: nowrap; }
+    td.url { max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    td.actions { white-space: nowrap; text-align: right; }
+    td.actions button { display: inline-block; width: auto; margin: 0 0 0 .3rem;
+      padding: .25rem .6rem; font-size: .8em; }
   </style>
 </head>
 <body>
@@ -106,12 +110,18 @@ const PAGE = `<!doctype html>
       const { links } = await r.json();
       document.getElementById("rows").innerHTML = links.map(function (l) {
         var slug = escapeHtml(l.slug);
-        var url = escapeHtml(l.url);
+        // Truncate the displayed URL so a long destination can't push the action
+        // buttons; the full URL stays available via the title tooltip (and the CSS
+        // ellipsis on td.url is a responsive backstop).
+        var shown = l.url.length > 80 ? l.url.slice(0, 80) + "…" : l.url;
+        var url = escapeHtml(shown);
+        var fullUrl = escapeHtml(l.url);
         var status = deadStatus(l); // status text is fixed/internal — safe to inline
         if (status && hideInactive) return "";
         var badge = status ? " <span class='badge'>" + status + "</span>" : "";
         return "<tr" + (status ? " class='dead'" : "") + "><td><a href='/" + slug + "'>" + slug + "</a>" + badge +
-          "</td><td>" + url + "</td><td>" + l.click_count + "</td><td><button data-copy='" + slug +
+          "</td><td class='url' title='" + fullUrl + "'>" + url + "</td><td>" + l.click_count +
+          "</td><td class='actions'><button data-copy='" + slug +
           "' class='copy secondary'>Copy</button> <button data-qr='" + slug +
           "' class='qr secondary'>QR</button> <button data-slug='" + slug +
           "' class='del'>Delete</button></td></tr>";
