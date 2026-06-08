@@ -10,6 +10,10 @@
     input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
     button { margin-top: 1.25rem; padding: 0.5rem 1rem; font-weight: 700; }
     #msg { margin-top: 1rem; }
+    .swatches { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .swatch { width: 2rem; height: 2rem; padding: 0; border-radius: 50%; border: 2px solid #d1d5db; cursor: pointer; margin: 0; }
+    .swatch:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
+    .swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #4f46e5; }
   </style>
 </head>
 <body>
@@ -18,6 +22,9 @@
   <label>Server URL <input id="serverUrl" type="url" placeholder="https://l.example.com" /></label>
   <label>Access Client ID <input id="accessClientId" type="text" /></label>
   <label>Access Client Secret <input id="accessClientSecret" type="password" /></label>
+  <label>QR color</label>
+  <div id="swatches" class="swatches"></div>
+  <label>QR caption <input id="qrCaption" type="text" maxlength="24" placeholder="SCAN ME" /></label>
   <button id="save">Save</button>
   <button id="test" style="margin-left: 0.5rem;">Test connection</button>
   <p id="msg" role="status"></p>

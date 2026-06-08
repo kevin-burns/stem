@@ -26,16 +26,27 @@ beforeEach(() => {
 
 describe("settings", () => {
   it("round-trips settings through storage", async () => {
-    await saveSettings({ serverUrl: "https://l.example.com", accessClientId: "id", accessClientSecret: "sec" });
+    await saveSettings({
+      serverUrl: "https://l.example.com",
+      accessClientId: "id",
+      accessClientSecret: "sec",
+      qrStyle: { preset: "navy", caption: "Scan me" },
+    });
     expect(await getSettings()).toEqual({
       serverUrl: "https://l.example.com",
       accessClientId: "id",
       accessClientSecret: "sec",
+      qrStyle: { preset: "navy", caption: "Scan me" },
     });
   });
 
-  it("defaults missing fields to empty strings", async () => {
-    expect(await getSettings()).toEqual({ serverUrl: "", accessClientId: "", accessClientSecret: "" });
+  it("defaults missing fields (incl. qrStyle) to sensible values", async () => {
+    expect(await getSettings()).toEqual({
+      serverUrl: "",
+      accessClientId: "",
+      accessClientSecret: "",
+      qrStyle: { preset: "black", caption: "SCAN ME" },
+    });
   });
 
   it("reports configured only when all fields are present", () => {

@@ -1,15 +1,22 @@
 import browser from "../lib/browser.js";
 import { getSettings, saveSettings, type Settings } from "../lib/settings.js";
 import { listLinks } from "../lib/api.js";
+import { DEFAULT_QR_PRESET } from "@url-shortener/shared";
+import { buildSwatches } from "./qr-swatches.js";
 
 const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
 const msg = document.getElementById("msg") as HTMLParagraphElement;
+let selectedPreset = DEFAULT_QR_PRESET;
 
 function readInputs(): Settings {
   return {
     serverUrl: $("serverUrl").value.trim().replace(/\/+$/, ""),
     accessClientId: $("accessClientId").value.trim(),
     accessClientSecret: $("accessClientSecret").value.trim(),
+    qrStyle: {
+      preset: selectedPreset,
+      caption: $("qrCaption").value.trim() || "SCAN ME",
+    },
   };
 }
 
@@ -34,6 +41,19 @@ async function init() {
   $("serverUrl").value = s.serverUrl;
   $("accessClientId").value = s.accessClientId;
   $("accessClientSecret").value = s.accessClientSecret;
+  selectedPreset = s.qrStyle.preset;
+  $("qrCaption").value = s.qrStyle.caption;
+  const container = document.getElementById("swatches")!;
+  function renderSwatches(): void {
+    container.innerHTML = "";
+    for (const b of buildSwatches(document, selectedPreset, (key) => {
+      selectedPreset = key;
+      renderSwatches();
+    })) {
+      container.append(b);
+    }
+  }
+  renderSwatches();
 }
 
 async function onSave() {

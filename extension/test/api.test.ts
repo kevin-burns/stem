@@ -6,6 +6,7 @@ const settings: Settings = {
   serverUrl: "https://l.example.com",
   accessClientId: "cid",
   accessClientSecret: "csec",
+  qrStyle: { preset: "black", caption: "SCAN ME" },
 };
 
 afterEach(() => vi.restoreAllMocks());
