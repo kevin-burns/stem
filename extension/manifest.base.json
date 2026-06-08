@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stem",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Stem — shorten the current tab against your own edge URL shortener on Cloudflare Workers.",
   "action": { "default_popup": "popup/popup.html", "default_title": "Shorten this page" },
   "options_ui": { "page": "options/options.html", "open_in_tab": true },
