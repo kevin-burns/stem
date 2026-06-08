@@ -30,6 +30,12 @@ The dashboard at `/admin` (behind Cloudflare Access) lists your links and create
 6. Show its QR code
 7. Delete the link
 
+Links that have expired, been disabled, or used up their one-time click stay in the
+database — expiry is a soft check (the redirect returns `410 Gone`; the row isn't
+deleted). The dashboard flags them with a status badge and a muted, struck-through
+row, and adds a **Hide inactive** toggle plus a **Delete inactive** button to clear
+them out in bulk. The per-row **Delete** still removes a single link.
+
 ## Layout
 - `shared/`: framework-free validation (Zod schemas, slug rules, URL safety), used by both the worker and the extension
 - `worker/`: the Cloudflare Worker (Hono routes, D1 access, auth, and the safety pipeline)
