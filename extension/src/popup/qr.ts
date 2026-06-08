@@ -1,4 +1,5 @@
-import { qrSvg } from "@url-shortener/shared";
+import { qrSvg, resolveQrPreset, DEFAULT_QR_PRESET } from "@url-shortener/shared";
+import type { QrStyle } from "../lib/settings.js";
 
 // Rasterise the QR SVG to a PNG blob. The SVG is loaded through a data: URL
 // (canvas-clean — a blob/element source can taint the canvas in Chromium and
@@ -37,7 +38,11 @@ export function copyQrImage(svg: string, size = 512): Promise<void> {
 // Show a modal overlay with the QR code for `shortUrl`, plus Copy-image and Close
 // buttons. Appended to document.body; returns the overlay element (for testing).
 // Replaces any existing overlay so repeated clicks never stack.
-export function openQrOverlay(shortUrl: string, doc: Document = document): HTMLElement {
+export function openQrOverlay(
+  shortUrl: string,
+  qrStyle: QrStyle = { preset: DEFAULT_QR_PRESET, caption: "SCAN ME" },
+  doc: Document = document,
+): HTMLElement {
   doc.getElementById("qrOverlay")?.remove();
 
   const overlay = doc.createElement("div");
@@ -47,7 +52,13 @@ export function openQrOverlay(shortUrl: string, doc: Document = document): HTMLE
   const card = doc.createElement("div");
   card.className = "qr-card";
 
-  const svg = qrSvg(shortUrl, { frame: true, caption: "SCAN ME" });
+  const preset = resolveQrPreset(qrStyle.preset);
+  const svg = qrSvg(shortUrl, {
+    frame: true,
+    caption: qrStyle.caption || "SCAN ME",
+    dark: preset.color,
+    light: "#ffffff",
+  });
   const code = doc.createElement("div");
   code.className = "qr-code";
   // qrSvg output is trusted markup we generate ourselves — it encodes the URL as

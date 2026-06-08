@@ -37,7 +37,7 @@ async function renderRecent(q?: string): Promise<void> {
       const qrBtn = document.createElement("button");
       qrBtn.className = "btn-copy";
       qrBtn.textContent = "QR";
-      qrBtn.onclick = () => openQrOverlay(`${settings.serverUrl}/${l.slug}`);
+      qrBtn.onclick = () => openQrOverlay(`${settings.serverUrl}/${l.slug}`, settings.qrStyle);
       const btn = document.createElement("button");
       btn.className = "btn-copy";
       btn.textContent = "Copy";

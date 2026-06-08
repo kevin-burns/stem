@@ -32,4 +32,14 @@ describe("openQrOverlay", () => {
     openQrOverlay("https://l.example.com/b");
     expect(document.querySelectorAll("#qrOverlay").length).toBe(1);
   });
+
+  it("renders the QR in the chosen preset color", () => {
+    openQrOverlay("https://l.example.com/abc", { preset: "navy", caption: "SCAN ME" });
+    expect(document.querySelector("#qrOverlay")!.innerHTML).toContain("#0a1f44");
+  });
+
+  it("falls back to black for an unknown preset", () => {
+    openQrOverlay("https://l.example.com/abc", { preset: "bogus", caption: "SCAN ME" });
+    expect(document.querySelector("#qrOverlay")!.innerHTML).toContain("#000000");
+  });
 });
