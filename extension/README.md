@@ -7,7 +7,7 @@ own deployed worker, authenticating through Cloudflare Access with a **service t
 
 **Features:** shorten the active tab (copies to clipboard) · optional custom slug,
 expiry (1h/24h/7d) and one-time links · recent-links list with search and per-row
-copy · QR code for any recent link · tracking/affiliate params stripped
+copy · QR code for any recent link (pick a color + caption in Options) · tracking/affiliate params stripped
 automatically · Options page with a
 **Test connection** check and least-privilege host permission.
 
