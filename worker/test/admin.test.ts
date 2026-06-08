@@ -77,4 +77,15 @@ describe("GET /admin", () => {
     const body = await res.text();
     expect(body).toContain('qrMsg.textContent = ""');
   });
+
+  it("flags inactive (expired/disabled/used-up) links with hide + bulk-delete controls", async () => {
+    const res = await app().request("/admin", { headers: { Authorization: "Bearer test-token" } }, env);
+    const body = await res.text();
+    expect(body).toContain("function deadStatus");
+    expect(body).toContain("Expired");
+    expect(body).toContain("Used up");
+    expect(body).toContain('id="hideInactive"');
+    expect(body).toContain('id="cleanInactive"');
+    expect(body).toContain("class='badge'");
+  });
 });

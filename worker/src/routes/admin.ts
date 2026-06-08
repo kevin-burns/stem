@@ -8,6 +8,13 @@ const PAGE = `<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Stem — Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <style>
+    tr.dead { opacity: .5; }
+    tr.dead td a { text-decoration: line-through; }
+    .badge { font-size: .7em; font-weight: 600; padding: .1em .45em; border-radius: .4em;
+      background: var(--pico-muted-border-color, #e5e7eb); color: var(--pico-muted-color, #555);
+      vertical-align: middle; white-space: nowrap; }
+  </style>
 </head>
 <body>
   <main class="container">
@@ -19,6 +26,8 @@ const PAGE = `<!doctype html>
     </form>
     <p id="msg" role="status"></p>
     <input id="search" type="search" placeholder="Search by slug or URL…" />
+    <label style="font-size:.85em"><input type="checkbox" id="hideInactive" /> Hide inactive (expired / disabled / used up)</label>
+    <button id="cleanInactive" class="secondary outline" style="font-size:.8em;padding:.3rem .7rem;width:auto">Delete inactive</button>
     <table><thead><tr><th>Slug</th><th>URL</th><th>Clicks</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -81,15 +90,28 @@ const PAGE = `<!doctype html>
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
       });
     }
+    // Mirror the worker's redirect "dead" check so the dashboard can flag links that
+    // no longer resolve. They stay in the DB — expiry is a soft 410, not a delete.
+    function deadStatus(l) {
+      var now = Math.floor(Date.now() / 1000);
+      if (l.disabled) return "Disabled";
+      if (l.expires_at !== null && now > l.expires_at) return "Expired";
+      if (l.max_clicks !== null && l.click_count >= l.max_clicks) return "Used up";
+      return "";
+    }
     async function load() {
       const q = document.getElementById("search").value.trim();
+      const hideInactive = document.getElementById("hideInactive").checked;
       const r = await fetch("/api/links" + (q ? "?q=" + encodeURIComponent(q) : ""));
       const { links } = await r.json();
       document.getElementById("rows").innerHTML = links.map(function (l) {
         var slug = escapeHtml(l.slug);
         var url = escapeHtml(l.url);
-        return "<tr><td><a href='/" + slug + "'>" + slug + "</a></td><td>" + url +
-          "</td><td>" + l.click_count + "</td><td><button data-copy='" + slug +
+        var status = deadStatus(l); // status text is fixed/internal — safe to inline
+        if (status && hideInactive) return "";
+        var badge = status ? " <span class='badge'>" + status + "</span>" : "";
+        return "<tr" + (status ? " class='dead'" : "") + "><td><a href='/" + slug + "'>" + slug + "</a>" + badge +
+          "</td><td>" + url + "</td><td>" + l.click_count + "</td><td><button data-copy='" + slug +
           "' class='copy secondary'>Copy</button> <button data-qr='" + slug +
           "' class='qr secondary'>QR</button> <button data-slug='" + slug +
           "' class='del'>Delete</button></td></tr>";
@@ -147,6 +169,19 @@ const PAGE = `<!doctype html>
     document.getElementById("search").oninput = function () {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(load, 200);
+    };
+    document.getElementById("hideInactive").onchange = load;
+    document.getElementById("cleanInactive").onclick = async function () {
+      const r = await fetch("/api/links");
+      const { links } = await r.json();
+      const dead = links.filter(deadStatus);
+      if (!dead.length) { msg.textContent = "No inactive links to delete."; return; }
+      if (!confirm("Delete " + dead.length + " inactive link" + (dead.length === 1 ? "" : "s") + "? This can't be undone.")) return;
+      for (const l of dead) {
+        await fetch("/api/links/" + encodeURIComponent(l.slug), { method: "DELETE" });
+      }
+      msg.textContent = "Deleted " + dead.length + " inactive link" + (dead.length === 1 ? "" : "s") + ".";
+      load();
     };
     load();
   </script>
