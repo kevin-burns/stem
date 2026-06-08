@@ -1,12 +1,20 @@
 import browser from "../lib/browser.js";
 import { getSettings, isConfigured, type Settings } from "../lib/settings.js";
 import { createLink, listLinks } from "../lib/api.js";
-import { isValidSlug } from "@url-shortener/shared";
+import { isValidSlug, type Link } from "@url-shortener/shared";
 import { openQrOverlay } from "./qr.js";
+import { pageSlice, buildPager } from "./pagination.js";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const msg = $<HTMLParagraphElement>("msg");
 let settings: Settings;
+
+// Fetch up to 100 recent links once and page through them client-side, 10 at a
+// time. The single-page batch keeps it snappy; search reaches anything older.
+const FETCH_LIMIT = 100;
+const PER_PAGE = 10;
+let recentLinks: Link[] = [];
+let page = 0;
 
 function expiryToFields(value: string): { expires_at?: number | null; max_clicks?: number | null } {
   const now = Math.floor(Date.now() / 1000);
@@ -23,28 +31,43 @@ function host(url: string): string {
   try { return new URL(url).host; } catch { return ""; }
 }
 
+// Draw the current page of recentLinks plus the pager. Pure render off module
+// state, so paging is just `page = n; paint()` with no refetch.
+function paint(): void {
+  const recent = $<HTMLDivElement>("recent");
+  recent.innerHTML = "";
+  for (const l of pageSlice(recentLinks, page, PER_PAGE)) {
+    const row = document.createElement("div");
+    row.className = "flex items-center justify-between bg-white p-2 rounded border text-xs shadow-sm";
+    const span = document.createElement("span");
+    span.className = "truncate w-40";
+    span.textContent = `${host(settings.serverUrl)}/${l.slug}`;
+    const qrBtn = document.createElement("button");
+    qrBtn.className = "btn-copy";
+    qrBtn.textContent = "QR";
+    qrBtn.onclick = () => openQrOverlay(`${settings.serverUrl}/${l.slug}`, settings.qrStyle);
+    const btn = document.createElement("button");
+    btn.className = "btn-copy";
+    btn.textContent = "Copy";
+    btn.onclick = () => navigator.clipboard.writeText(`${settings.serverUrl}/${l.slug}`);
+    row.append(span, qrBtn, btn);
+    recent.append(row);
+  }
+  const pager = buildPager(document, {
+    page,
+    total: recentLinks.length,
+    perPage: PER_PAGE,
+    onPage: (p) => { page = p; paint(); },
+  });
+  if (pager) recent.append(pager);
+}
+
 async function renderRecent(q?: string): Promise<void> {
   const recent = $<HTMLDivElement>("recent");
   try {
-    const links = await listLinks(settings, q);
-    recent.innerHTML = "";
-    for (const l of links.slice(0, 10)) {
-      const row = document.createElement("div");
-      row.className = "flex items-center justify-between bg-white p-2 rounded border text-xs shadow-sm";
-      const span = document.createElement("span");
-      span.className = "truncate w-40";
-      span.textContent = `${host(settings.serverUrl)}/${l.slug}`;
-      const qrBtn = document.createElement("button");
-      qrBtn.className = "btn-copy";
-      qrBtn.textContent = "QR";
-      qrBtn.onclick = () => openQrOverlay(`${settings.serverUrl}/${l.slug}`, settings.qrStyle);
-      const btn = document.createElement("button");
-      btn.className = "btn-copy";
-      btn.textContent = "Copy";
-      btn.onclick = () => navigator.clipboard.writeText(`${settings.serverUrl}/${l.slug}`);
-      row.append(span, qrBtn, btn);
-      recent.append(row);
-    }
+    recentLinks = await listLinks(settings, q, FETCH_LIMIT);
+    page = 0;
+    paint();
   } catch (err) {
     // textContent (not innerHTML): the message can include server-supplied text.
     recent.innerHTML = "";

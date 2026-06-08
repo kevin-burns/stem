@@ -41,6 +41,7 @@ h1 { margin: 0; }
 .hidden { display: none; }
 input, select { border: 1px solid #d1d5db; padding: 8px; border-radius: 8px; font-size: 0.875rem; width: 100%; box-sizing: border-box; }
 button { cursor: pointer; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; }
+button:disabled { opacity: 0.4; cursor: default; }
 .btn-primary { background-color: #4f46e5; color: white; }
 .btn-copy { background-color: #f3f4f6; font-size: 0.75rem; padding: 4px 8px; width: auto; }
 .slug-wrap { overflow: hidden; }

@@ -63,8 +63,12 @@ export async function createLink(s: Settings, input: CreateInput): Promise<Creat
   return (await res.json()) as CreatedLink;
 }
 
-export async function listLinks(s: Settings, q?: string): Promise<Link[]> {
-  const url = `${base(s)}/api/links` + (q ? `?q=${encodeURIComponent(q)}` : "");
+export async function listLinks(s: Settings, q?: string, limit?: number): Promise<Link[]> {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (limit) params.set("limit", String(limit));
+  const qs = params.toString();
+  const url = `${base(s)}/api/links` + (qs ? `?${qs}` : "");
   const res = await request(url, { headers: authHeaders(s) });
   const body = (await res.json()) as { links: Link[] };
   return body.links;

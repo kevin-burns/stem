@@ -59,4 +59,10 @@ describe("listLinks", () => {
     await listLinks(settings, "term");
     expect(spy.mock.calls[0]![0]).toBe("https://l.example.com/api/links?q=term");
   });
+
+  it("passes a limit through ?limit=", async () => {
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ links: [] }), { status: 200 }));
+    await listLinks(settings, undefined, 100);
+    expect(spy.mock.calls[0]![0]).toBe("https://l.example.com/api/links?limit=100");
+  });
 });
