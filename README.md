@@ -53,28 +53,102 @@ npm test
 ```
 
 ## Deploy
+
+> **Run every `wrangler` command from the `worker/` directory.** `wrangler.toml`
+> lives there (not at the repo root), and `wrangler secret put` / `wrangler d1 …`
+> read it to know *which* Worker to target. Run them from the repo root and you'll
+> get errors like `Missing entry-point` or `No config file found` — this is the
+> single most common setup snag. (The `npm run` shortcuts noted below work from the
+> repo root because npm cd's into `worker/` for you.)
+
 ```bash
-# 1. Create the D1 database and copy its id into worker/wrangler.toml
+cd worker          # all wrangler commands below are run from here
+
+# 1. Create the D1 database, then paste the printed `database_id` into wrangler.toml
 npx wrangler d1 create url_shortener
 
 # 2. Apply migrations to the remote database
-npm --workspace worker run migrate:remote
+npx wrangler d1 migrations apply url_shortener --remote   # = npm --workspace worker run migrate:remote
 
-# 3. Set secrets (never committed)
+# 3. Set secrets (never committed).
+#    API_TOKEN is NOT a Cloudflare token — it's a random secret you invent. The
+#    worker only checks that an incoming `Authorization: Bearer <x>` matches it.
+#    Generate one and paste it when prompted:
+#        openssl rand -base64 32
 npx wrangler secret put API_TOKEN
 npx wrangler secret put SHORT_DOMAIN          # your short-link host, e.g. l.example.com
 npx wrangler secret put SAFE_BROWSING_API_KEY # optional reputation provider
 
 # 4. Add your short-link domain as a Workers route / custom domain in the
 #    Cloudflare dashboard, then deploy
-npm run deploy
+npx wrangler deploy                           # = npm run deploy (from the repo root)
 ```
 
+To confirm a secret landed, list them (also from `worker/`): `npx wrangler secret list`.
+
+## Authentication — two separate paths
+
+It's easy to get stuck here because there are **two different credentials**, and
+only one of them comes from Cloudflare:
+
+| Credential | Who creates it | Used by | What it is |
+| --- | --- | --- | --- |
+| **`API_TOKEN`** (Bearer) | **You** — a random string you invent | scripts / `curl` hitting `/api` directly | a Worker secret; the worker compares `Authorization: Bearer <x>` against it |
+| **Access service token** (Client ID + Secret) | **Cloudflare** Zero Trust | the browser extension | Cloudflare issues it; the worker verifies the resulting Access JWT |
+
+So `API_TOKEN` is **not** a Cloudflare token — generate it yourself (step 3 above).
+The Cloudflare-issued credential is the *Access service token*, set up below.
+
 ## Lock down /admin and /api with Cloudflare Access
-In the Cloudflare Zero Trust dashboard, create an Access application that covers
-`/admin*` and `/api/*` on your domain and restrict it to your own identity. Set
-the worker secrets `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` so the worker also
-verifies the Access JWT itself, as a second layer of defense.
+
+Cloudflare reorganizes its dashboard from time to time; as of this writing the
+menus live under **Zero Trust → Access controls**. The flow:
+
+1. **Get your team domain.** Cloudflare dashboard → **Zero Trust → Settings →
+   Team name and domain**. It looks like `your-team.cloudflareaccess.com`. This is
+   the worker secret **`ACCESS_TEAM_DOMAIN`**.
+
+2. **Create the Access application.** **Zero Trust → Access controls →
+   Applications → Add an application → Self-hosted**. Add two paths on your short
+   domain so both the dashboard and the API are protected:
+   - `your-domain.com/admin*`
+   - `your-domain.com/api/*`
+
+3. **Grab the AUD tag.** Open that application → **Configure → Additional
+   settings → Application Audience (AUD) Tag**, and copy it. This is the worker
+   secret **`ACCESS_AUD`**.
+
+4. **Add a policy so *you* can reach `/admin` in a browser.** On the application,
+   add a policy with **Action = Allow**, **Include → Emails →** your own email
+   (or another identity rule). This is the interactive login for the dashboard.
+
+5. **Add a second policy for the extension's service token.** First create the
+   token: **Zero Trust → Access controls → Service credentials → Service Tokens →
+   Create Service Token** — copy the **Client ID** (ends in `.access`) and
+   **Client Secret** (shown once). Then on the same application add another
+   policy with **Action = `Service Auth`** (⚠️ *not* `Allow` — an `Allow` policy
+   with a service token still expects an interactive login and is rejected with
+   `service_token_status:false`), **Include → Service Token →** your token. Full
+   extension walkthrough: [extension/README.md](./extension/README.md).
+
+6. **Tell the worker to verify the JWT too** (defense in depth — so the worker
+   rejects requests even if they somehow bypass the Access edge). As in Deploy,
+   run these from the `worker/` directory:
+
+   ```bash
+   cd worker
+   npx wrangler secret put ACCESS_TEAM_DOMAIN   # your-team.cloudflareaccess.com (step 1)
+   npx wrangler secret put ACCESS_AUD           # the AUD tag from step 3
+   npx wrangler deploy
+   ```
+
+To sanity-check the service token from the command line (want `200`):
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" \
+  -H "CF-Access-Client-Id: <id>.access" -H "CF-Access-Client-Secret: <secret>" \
+  https://your-domain.com/api/links
+```
 
 
 
