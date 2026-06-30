@@ -16,4 +16,5 @@ If you exceed the free tier, paid pricing is $0.30 per million requests and
 $0.02 per million CPU-ms for Workers, plus $0.001 per million rows read for D1.
 For a personal shortener you'd need significant viral traffic to incur any charges.
 
-Source: [Cloudflare Developer Platform Pricing](https://workers.cloudflare.com/pricing.md)
+Sources: [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/) ·
+[D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/)

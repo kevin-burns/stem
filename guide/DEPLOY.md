@@ -59,9 +59,12 @@ npx wrangler secret put SAFE_BROWSING_API_KEY --config worker/wrangler.toml  # o
 ### About the secrets
 
 - **`API_TOKEN`** — A secret bearer token you create yourself (any strong random
-  string). The worker checks `Authorization: Bearer <token>` headers against this
-  value. Use the same token in the extension settings or any HTTP client that calls
-  `/api/links`. Generate one with `openssl rand -base64 32` or `npx auth secret`.
+  string), **not** a Cloudflare token. The worker checks `Authorization: Bearer
+  <token>` headers against this value. Use it from `curl` or any HTTP client that
+  calls `/api/links` directly. Generate one with `openssl rand -base64 32`. The
+  browser **extension does not use this token** — it authenticates with a Cloudflare
+  Access *service token* instead (see
+  [Lock down /admin and /api](#lock-down-admin-and-api-with-cloudflare-access) below).
 
 - **`SHORT_DOMAIN`** — The hostname for your short links (e.g. `l.example.com`).
 
@@ -141,3 +144,29 @@ npm run deploy
 Now visiting `/admin` in the browser triggers a Cloudflare Access login page.
 After authenticating, the worker validates the Access JWT as a second layer of
 defense.
+
+### Allow the browser extension (service token)
+
+The extension can't do an interactive login, so it authenticates with a Cloudflare
+Access **service token** rather than the `API_TOKEN`. To enable it:
+
+1. **Zero Trust** → **Access controls** → **Service credentials** → **Service Tokens**
+   → **Create Service Token**. Copy the **Client ID** (ends in `.access`) and
+   **Client Secret** (shown only once).
+2. On the same Access application, add a **second policy** with **Action = `Service
+   Auth`** — *not* `Allow`. (An `Allow` policy with a service token still expects an
+   interactive login and is rejected with `service_token_status:false`.) Set
+   **Include** → **Service Token** → your token.
+
+Paste the Client ID and Secret into the extension's Options page — full walkthrough
+in [extension/README.md](../extension/README.md).
+
+### Reference
+
+These steps follow Cloudflare's official docs (the dashboard paths are quoted from
+them; Cloudflare brands the product **Cloudflare One**, but the left-nav section is
+still labelled **Zero Trust** — same place):
+
+- [Validating JSON Web Tokens](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/) — the AUD-tag lookup and the JWT-validation logic the worker mirrors
+- [Service tokens](https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/)
+- [Team name (glossary)](https://developers.cloudflare.com/cloudflare-one/glossary/)
