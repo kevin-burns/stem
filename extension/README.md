@@ -27,10 +27,16 @@ Tapping **QR** opens a scannable "scan me" card you can copy as an image:
 
 <img src="../images/extension-qr.webp" width="300" alt="The QR code card with Copy image and Close buttons" />
 
+> **Before you start:** deploy the worker and put Cloudflare Access in front of it
+> (see the [main README](../README.md)). Throughout this guide, replace
+> `l.example.com`, `your-short-domain`, and anything in `<angle-brackets>` with
+> your own values.
+
 ## 1. Create the Access service token
-1. Zero Trust → **Access → Service Auth → Create Service Token**. Name it (e.g.
-   `url-shorten-extension`) and **copy the Client ID and Client Secret** — the
-   secret is shown only once. The Client ID ends in `.access`.
+1. Zero Trust → **Access controls → Service credentials → Service Tokens → Create
+   Service Token**. Name it (e.g. `url-shorten-extension`) and **copy the Client ID
+   and Client Secret** — the secret is shown only once. The Client ID ends in
+   `.access`.
 2. Open the Access **application** that protects your short domain (the one covering
    `/admin*` and `/api/*`) → **Policies → Add a policy**:
    - **Action must be `Service Auth`**, *not* `Allow`. An `Allow` policy with a
@@ -40,12 +46,14 @@ Tapping **QR** opens a scannable "scan me" card you can copy as an image:
 
 ## 2. Get it — download or build
 
-**Download (no build):** grab `chrome.zip` from the
-[latest release](https://github.com/kevin-burns/stem/releases/latest) and unzip it.
+**Download (no build):** on the
+[latest release](https://github.com/kevin-burns/stem/releases/latest), download the
+`stem-chrome-extension-v<version>.zip` asset and unzip it.
 
-**Or build from source:**
+**Or build from source.** Needs **Node 20** and npm. From the **repo root**:
 ```bash
-npm run build:ext
+npm install            # installs all workspaces (first time only)
+npm run build:ext      # outputs extension/dist/chrome and extension/dist/firefox
 ```
 
 **Load it (Chrome/Brave/Edge/Vivaldi/Arc):** `chrome://extensions` → enable
