@@ -11,7 +11,7 @@ copy · QR code for any recent link (pick a color + caption in Options) · track
 automatically · Options page with a
 **Test connection** check and least-privilege host permission.
 
-<img src="../images/extension-panel.webp" width="360" alt="The extension popup, with numbered callouts" />
+![The extension popup, with numbered callouts](../images/extension-panel.webp)
 
 1. Target URL (auto-filled from the current tab)
 2. Optional custom slug
@@ -25,7 +25,7 @@ The **⚙ gear** at the top-right opens settings.
 
 Tapping **QR** opens a scannable "scan me" card you can copy as an image:
 
-<img src="../images/extension-qr.webp" width="300" alt="The QR code card with Copy image and Close buttons" />
+![The QR code card with Copy image and Close buttons](../images/extension-qr.webp)
 
 > **Before you start:** deploy the worker and put Cloudflare Access in front of it
 > (see the [main README](../README.md)). Throughout this guide, replace
@@ -33,6 +33,7 @@ Tapping **QR** opens a scannable "scan me" card you can copy as an image:
 > your own values.
 
 ## 1. Create the Access service token
+
 1. Zero Trust → **Access controls → Service credentials → Service Tokens → Create
    Service Token**. Name it (e.g. `url-shorten-extension`) and **copy the Client ID
    and Client Secret** — the secret is shown only once. The Client ID ends in
@@ -51,6 +52,7 @@ Tapping **QR** opens a scannable "scan me" card you can copy as an image:
 `stem-chrome-extension-v<version>.zip` asset and unzip it.
 
 **Or build from source.** Needs **Node 20** and npm. From the **repo root**:
+
 ```bash
 npm install            # installs all workspaces (first time only)
 npm run build:ext      # outputs extension/dist/chrome and extension/dist/firefox
@@ -74,14 +76,16 @@ npm run build:ext      # outputs extension/dist/chrome and extension/dist/firefo
     under `about:addons` → the extension → Permissions. -->
 
 ## 3. Configure
+
 Open the extension → **⚙** (or right-click the icon → Options) and enter, each value
 pasted verbatim (no header names, no trimming):
+
 - **Server URL:** your short domain, e.g. `https://l.example.com` (the redirect
   host, not the apex).
 - **Access Client ID:** the full value including the `.access` suffix.
 - **Access Client Secret:** the full secret.
 
-<img src="../images/extension-settings.webp" width="480" alt="The extension settings page, with numbered callouts" />
+![The extension settings page, with numbered callouts](../images/extension-settings.webp)
 
 1. Server URL — your short domain
 2. Access Client ID (ends in `.access`)
@@ -97,10 +101,12 @@ enable it manually: `chrome://extensions` → the extension → **Details → Si
 green ✓ means the token, policy, and permission are all good.
 
 ## Troubleshooting
+
 - **"Failed to fetch"** → the host permission isn't granted for your domain (enable
   the Site access toggle), or the Server URL points at the wrong host.
 - **"Access rejected — login redirect"** → the Access policy isn't `Service Auth`,
   or the token isn't on the app covering `/api/*`. Verify with:
+
   ```bash
   curl -sS -o /dev/null -w "%{http_code}\n" \
     -H "CF-Access-Client-Id: <id>.access" -H "CF-Access-Client-Secret: <secret>" \
