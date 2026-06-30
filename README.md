@@ -150,6 +150,15 @@ curl -sS -o /dev/null -w "%{http_code}\n" \
   https://your-domain.com/api/links
 ```
 
+These steps track Cloudflare's official docs (the dashboard paths above are
+quoted from them). For the canonical source — including the AUD-tag lookup and
+the exact JWT-validation logic the worker mirrors — see
+[Validating JSON Web Tokens](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/),
+[Service tokens](https://developers.cloudflare.com/cloudflare-one/access-controls/service-credentials/service-tokens/),
+and [Team name (glossary)](https://developers.cloudflare.com/cloudflare-one/glossary/).
+Cloudflare brands the product **Cloudflare One**, but the dashboard's left-nav
+section is still labelled **Zero Trust** — they're the same place.
+
 
 
 ## Notes
