@@ -33,23 +33,37 @@ The dashboard at `/admin` (behind Cloudflare Access) lists your links and create
 9. Delete the link
 
 Links that have expired, been disabled, or used up their one-time click stay in the
-database — expiry is a soft check (the redirect returns `410 Gone`; the row isn't
-deleted). The dashboard flags them with a status badge and a muted, struck-through
+database. Expiry is a soft check: the redirect returns `410 Gone`, but the row isn't
+deleted. The dashboard flags these with a status badge and a muted, struck-through
 row, and adds a **Hide inactive** toggle plus a **Delete inactive** button to clear
-them out in bulk. The per-row **Delete** still removes a single link.
+them in bulk. The per-row **Delete** still removes a single link.
 
 ## Layout
 - `shared/`: framework-free validation (Zod schemas, slug rules, URL safety), used by both the worker and the extension
 - `worker/`: the Cloudflare Worker (Hono routes, D1 access, auth, and the safety pipeline)
 - `extension/`: cross-browser (Chrome + Firefox) MV3 extension — see [extension/README.md](./extension/README.md)
 
+The repo folder and npm packages are named `url-shortener` / `@url-shortener/*`;
+"Stem" is the product name. The mismatch is intentional, so don't rename them.
+
+## Prerequisites
+- **Node 20** and npm. CI builds and tests on Node 20. You don't need a global
+  Wrangler install: every `wrangler` command here runs through `npx`.
+- A **Cloudflare account** to deploy (Worker + D1 database + Cloudflare Access).
+- Authenticate Wrangler once before any remote command, from `worker/`:
+  `npx wrangler login`.
+- **Placeholder convention:** replace `your-domain.com`, `l.example.com`,
+  `your-team.cloudflareaccess.com`, and anything in `<angle-brackets>` with your
+  own values.
+
 ## Develop
 ```bash
 npm install
 cp worker/.dev.vars.example worker/.dev.vars   # fill in API_TOKEN, SHORT_DOMAIN, etc.
-npm --workspace worker run migrate:local
-npm --workspace worker run dev
-npm test
+npm --workspace worker run migrate:local       # create + migrate the local D1 database
+npm --workspace worker run dev                 # serve the worker at http://localhost:8787
+npm test                                       # vitest across all workspaces
+npm run typecheck                              # tsc --noEmit across all workspaces
 ```
 
 ## Deploy
@@ -158,8 +172,6 @@ the exact JWT-validation logic the worker mirrors — see
 and [Team name (glossary)](https://developers.cloudflare.com/cloudflare-one/glossary/).
 Cloudflare brands the product **Cloudflare One**, but the dashboard's left-nav
 section is still labelled **Zero Trust** — they're the same place.
-
-
 
 ## Notes
 - Link search uses `LIKE '%term%'` (a full table scan) on purpose — at single-user
